@@ -1,6 +1,6 @@
 {
   "name": "node-cross-filter",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "server side cross filter which will fire required queries directly in respective database",
   "main": "node-cross-filter.js",
   "repository": {
@@ -17,5 +17,9 @@
   },
   "author": "Darshit Shah",
   "license": "BSD",
-  "gitHead": "da3b2647090d0ba1a60c85d0dbe310d6e1d4e0e5"
+  "gitHead": "da3b2647090d0ba1a60c85d0dbe310d6e1d4e0e5",
+  "bugs": {
+    "url": "https://github.com/darshit-shah/node-cross-filter/issues"
+  },
+  "homepage": "https://github.com/darshit-shah/node-cross-filter"
 }
