@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title id="pageTitle">Axiom Cross Filter</title>
+    <meta name="fragment" content="!">
+    <style>
+        #tooltip
+        {
+            position: absolute;
+            width: 200px;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            -mox-box-shadow: 4px 4px 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 4px 4px 10px rbga(0, 0, 0, 0.4) pointer-events: none;
+        }
+        #tooltip.hidden
+        {
+            opacity: 0;
+        }
+        #tooltip p
+        {
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 16px;
+            line-height: 20px;
+        }
+        #selectDimension table
+        {
+            margin: 10px;
+        }
+        
+        #selectDimension td
+        {
+            padding: 3px;
+        }
+        
+        #selectDimension input[type=text], select
+        {
+            width: 250px;
+        }
+        
+        #selectDimension td:nth-child(1)
+        {
+            width: 110px;
+        }
+        #chart td
+        {
+            padding: 5px;
+        }
+        
+        #chart tr:not(:last-child)
+        {
+            border-bottom: 1px solid #EEE;
+        }
+        
+        #chart tr td:not(:last-child)
+        {
+            border-right: 1px solid #EEE;
+        }
+        
+        #chart tr td:last-child
+        {
+            text-align: right;
+        }
+        
+        #chart .area
+        {
+            fill: steelblue;
+            clip-path: url(#clip);
+        }
+        
+        #chart .axis path, #chart .axis line
+        {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        
+        #chart .brush .extent
+        {
+            stroke: #fff;
+            fill-opacity: .125;
+            shape-rendering: crispEdges;
+        }
+        
+        .page
+        {
+            width: 1100px;
+        }
+        
+        .header
+        {
+            background-color: steelblue;
+            font-size: 30px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <div class="header">
+            <div>
+                Node Cross Filter Example</div>
+        </div>
+        <div id="divContainer" style="display: none; background-color: #eee; height: 100%;">
+            <div style="padding: 5px;">
+                <input type="button" value="Setup" onclick="AxiomCrossFilterClient.setup()" />
+                <input type="button" value="Add Dimenssion" onclick="AxiomCrossFilterClient.addDimension()" />
+                <!--<input type="button" value="Fetch Data" onclick="AxiomCrossFilterClient.fetchData()" />-->
+                <span id="statusMessage"></span>
+            </div>
+            <div id="crossFilterContainer">
+                <div id="countOfRecords" style="border: 5px solid rgb(238, 238, 238); margin: 10px;
+                    float: left; font-size: 11px; background: rgb(255, 255, 255); display: none;">
+                    <div style="font-size: 14px; margin-bottom: 5px; width: 100%; background: #EEE; text-align: center;
+                        font-weight: bold; padding: 3px;">
+                        Count of Records</div>
+                    <div id="chart" style="margin: 5px; text-align: center; font-size: 14px;">
+                        0
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="selectDimension" style="display: block; position: absolute; left: 50%; top: 200px;
+            width: 400px; margin-left: -200px; background-color: rgba(200,200,200,0.8); display: none">
+            <table style="width: 100%; padding: 5px;">
+                <tr>
+                    <td>
+                        Dimension:
+                    </td>
+                    <td>
+                        <input type="text" id="dimension" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Measure Type:
+                    </td>
+                    <td>
+                        <select id="measureType" onchange="AxiomCrossFilterClient.measureTypeChanged()">
+                            <option value="count">Count</option>
+                            <option value="sum">Sum</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Measure:
+                    </td>
+                    <td>
+                        <input type="text" id="measure" disabled />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Chart Type:
+                    </td>
+                    <td>
+                        <select id="chartType" onchange="AxiomCrossFilterClient.chartTypeChanged()">
+                            <option value="pie">Pie</option>
+                            <option value="range">Range</option>
+                            <option value="pivot">Pivot</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Range Type:
+                    </td>
+                    <td>
+                        <select id="rangeType" disabled onchange="AxiomCrossFilterClient.rangeTypeChanged()">
+                            <option value="date">Date</option>
+                            <option value="number">Number</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Format:
+                    </td>
+                    <td>
+                        <input type="text" id="formatType" disabled />
+                    </td>
+                </tr>
+            </table>
+            <div style="padding: 5px; position: relative; margin-bottom: 5px; float: right; margin-right: 20px;">
+                <input type="button" value="Done" onclick="AxiomCrossFilterClient.okDimension()" />
+                <input type="button" value="Cancel" onclick="AxiomCrossFilterClient.cancelDimension()" />
+            </div>
+        </div>
+        <div id="applyFilterStatus" style="display: none">
+            <div style="background: url(/images/transparent-bg.png); position: fixed; height: 100%;
+                width: 100%; z-index: 999; left: 0; top: 0;">
+                <div style="background: url(/images/ajax-loader.gif) no-repeat center 20px #fff;
+                    position: fixed; top: 0px; padding: 10px; height: 100px; width: 180px; z-index: 99999;
+                    -moz-border-radius: 6px; -webkit-border-radius: 6px; border-radius: 6px; margin: -45px 0 0 -80px;
+                    left: 50%; top: 50%; border: 1px solid #ccc; -moz-box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.1);
+                    -webkit-box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.1); box-shadow: 1px 1px 2px 2px rgba(0, 0, 0, 0.1);">
+                    <p style="margin: 60px 0 0; color: #555; font: 14px 'Helvetica Neue', Helvetica;
+                        text-align: center;">
+                        Applying Filter</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="js/jquery-1.7.2.min.js"></script>
+<script src="js/socket.io.min.js"></script>
+<script src="js/d3.v3.js"></script>
+<script src="js/AxiomCrossFilterClient.js"></script>
+</html>
