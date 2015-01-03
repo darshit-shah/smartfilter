@@ -1,6 +1,6 @@
 ﻿"use strict";
 function nodeCrossFilter() {
-    this.debug = false;
+    this.debug = true;
     this.tablename = "";
     this.staticFilters = {};
     this.filteredDimension = {};
@@ -63,8 +63,10 @@ nodeCrossFilter.prototype.getData = function (from, to, cb) {
     });
 }
 
-nodeCrossFilter.prototype.addToPivotList = function (dimension, measure, cb) {
+nodeCrossFilter.prototype.dimension = function (dimension, measure, cb) {
     var _this = this;
+    if (_this.debug)
+        console.log({ dimension: dimension, measure: measure });
     if (_this.pivotKeyList.indexOf(dimension) == -1) {
         _this.pivotKeyList.push(dimension);
         _this.pivotList[dimension] = [];
@@ -76,8 +78,12 @@ nodeCrossFilter.prototype.addToPivotList = function (dimension, measure, cb) {
     _this.execute(0, '', cb);
 }
 
-nodeCrossFilter.prototype.filterFixDimension = function (filterType, dimension, values, cb) {
+nodeCrossFilter.prototype.filter = function (filterType, dimension, values, cb) {
     var _this = this;
+    if (_this.filteredDimension[dimension] === undefined) {
+        _this.filteredDimension[dimension] = {};
+        _this.filteredDimension[dimension].filters = [];
+    }
     _this.filteredDimension[dimension].filterType = filterType;
     var existingCondition = _this.filteredDimension[dimension].filters;
     var newCondition = [];
@@ -126,48 +132,51 @@ nodeCrossFilter.prototype.filterFixDimension = function (filterType, dimension, 
         }
     }
     else if (filterType === 'in') {
-        //most likely removed some values
-        if (existingCondition.length > values.length) {
-            //if existing/2 < new then try to alter condition else dont alter condition
-            if (existingCondition.length / 2 < values.length) {
-                //all new values should be part of existing values
-                var allNewValuesFound = true;
-                var existingFoundIndexes = [];
-                for (var i = 0; i < values.length && allNewValuesFound === true; i++) {
-                    //current value is not part of existing condition
-                    var existingIndex = existingCondition.indexOf(values[i]);
-                    if (existingIndex === -1) {
-                        allNewValuesFound = false;
-                    }
-                    else {
-                        //do nothing
-                        existingFoundIndexes.push(existingIndex);
-                    }
-                }
-                //actually new values are subset of old values
-                if (allNewValuesFound === true) {
-                    for (var i = 0; i < existingCondition.length; i++) {
-                        if (existingFoundIndexes.indexOf(i) === -1) {
-                            newCondition.push(existingCondition[i]);
+        //first time filter
+        if (existingCondition.length === 0) {
+            newCondition = values;
+            addReduceNone = 0;
+        }
+        else {
+            //most likely removed some values
+            if (existingCondition.length > values.length) {
+                //if existing/2 < new then try to alter condition else dont alter condition
+                if (existingCondition.length / 2 < values.length) {
+                    //all new values should be part of existing values
+                    var allNewValuesFound = true;
+                    var existingFoundIndexes = [];
+                    for (var i = 0; i < values.length && allNewValuesFound === true; i++) {
+                        //current value is not part of existing condition
+                        var existingIndex = existingCondition.indexOf(values[i]);
+                        if (existingIndex === -1) {
+                            allNewValuesFound = false;
+                        }
+                        else {
+                            //do nothing
+                            existingFoundIndexes.push(existingIndex);
                         }
                     }
-                    addReduceNone = 2;
+                    //actually new values are subset of old values
+                    if (allNewValuesFound === true) {
+                        for (var i = 0; i < existingCondition.length; i++) {
+                            if (existingFoundIndexes.indexOf(i) === -1) {
+                                newCondition.push(existingCondition[i]);
+                            }
+                        }
+                        addReduceNone = 2;
+                    }
+                    else {
+                        newCondition = values;
+                        addReduceNone = 0;
+                    }
                 }
                 else {
                     newCondition = values;
                     addReduceNone = 0;
                 }
             }
+            //most likely added some values
             else {
-                newCondition = values;
-                addReduceNone = 0;
-            }
-        }
-        //most likely added some values
-        else {
-            //all new values should be part of existing values
-            //if new/2 < existing then try to alter condition else dont alter condition
-            if (values.length / 2 < existingCondition.length) {
                 //all existing values should be part of new values
                 var allExistingValuesFound = true;
                 var newValuesFoundIndexes = [];
@@ -196,16 +205,17 @@ nodeCrossFilter.prototype.filterFixDimension = function (filterType, dimension, 
                     addReduceNone = 0;
                 }
             }
-            else {
-                newCondition = values;
-                addReduceNone = 0;
-            }
         }
     }
 
     _this.filteredDimension[dimension].filters = newCondition;
-    if (_this.debug)
-        console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
+    if (_this.debug) {
+        console.log('original filter: ', values);
+        console.log('changed  filter: ', newCondition);
+        console.log('merge type: ', (addReduceNone === 0 ? 'replace' : (addReduceNone === 1 ? 'Add' : 'Reduce')));
+    }
+    //    if (_this.debug)
+    //        console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
     _this.execute(addReduceNone, dimension, function (data) {
         _this.filteredDimension[dimension].filters = values;
         cb(data);
@@ -216,8 +226,8 @@ nodeCrossFilter.prototype.filterFixDimension = function (filterType, dimension, 
 nodeCrossFilter.prototype.execute = function (addReduceNone, dimension, cb) {
     var _this = this;
     _this.updateAllResults(0, addReduceNone, dimension, function (data) {
-        if (_this.debug)
-            console.log('execute', data);
+        //        if (_this.debug)
+        //            console.log('execute', data);
         cb(data);
         data = null;
     });
@@ -243,8 +253,8 @@ nodeCrossFilter.prototype.createWhereCondition = function (dimension) {
     }
     if (filterCondition !== undefined && filterCondition.and.length === 0)
         filterCondition = undefined;
-    if (_this.debug)
-        console.log('createWhereCondition', _this.filteredDimension, filterCondition);
+    //    if (_this.debug)
+    //        console.log('actual filter: ', (filterCondition != undefined ? filterCondition.and : 'none'));
     return filterCondition;
 }
 
@@ -258,8 +268,8 @@ nodeCrossFilter.prototype.updateAllResults = function (index, addReduceNone, dim
         }
         var i = index;
         var startTime = new Date().getTime();
-        if (_this.debug)
-            console.log('Querying for for : ' + _this.pivotKeyList[i]);
+        //        if (_this.debug)
+        //            console.log('Querying for for dimension \'' + _this.pivotKeyList[i] + '\'');
         var query = {};
         query.table = _this.tableName;
         query.select = [];
@@ -277,7 +287,7 @@ nodeCrossFilter.prototype.updateAllResults = function (index, addReduceNone, dim
         }
         _this.createToExternalDatabase(_this.pivotKeyList[index], query, function (data, isCachedResult) {
             if (_this.debug)
-                console.log('Result Returned for' + _this.pivotKeyList[i] + ' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'cache' : 'db'));
+                console.log('Result Returned for dimension \'' + _this.pivotKeyList[i] + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db'));
 
             //add to existing
             if (addReduceNone === 1) {
@@ -300,7 +310,7 @@ nodeCrossFilter.prototype.updateAllResults = function (index, addReduceNone, dim
                     var keyIndex = _this.pivotListResultKey[_this.pivotKeyList[i]].indexOf(data[j][_this.pivotKeyList[i]]);
                     if (keyIndex === -1) {
                         // not possible
-                        throw ("Axiom Crossfilter, reduce part could not found existing row.");
+                        throw ("node-cross-filter, reduce part could not found existing row.");
                     }
                     else {
 
@@ -375,7 +385,6 @@ nodeCrossFilter.prototype.setup = function (tblName, config, cb) {
         }
         else {
             _this.c = c;
-            _this.cReq.cb({ type: 'message', data: 'connected successfully' });
             _this.cReq.cb({ type: 'connectSuccess', data: 'connected successfully' });
         }
         cb();
@@ -394,11 +403,11 @@ nodeCrossFilter.prototype.requestCrossfilterService = function (m, cb) {
 
 nodeCrossFilter.prototype.queryExecutor = function (query, cb) {
     var _this = this;
-    if (_this.debug)
-        console.log('query', query);
+    //    if (_this.debug)
+    //        console.log('query', query);
     var queryString = _this.objConnection.prepareQuery(query);
-    if (_this.debug)
-        console.log('queryString', queryString);
+    //    if (_this.debug)
+    //        console.log('queryString:\n', queryString);
     _this.c.query(queryString, function (err, rows, fields) {
         cb(err, rows, fields);
         err = null;
@@ -413,23 +422,23 @@ nodeCrossFilter.prototype.processRequestStack = function () {
     if (_this.myRequestStack.length > 0) {
         _this.processRequestRunning = true;
         _this.cReq = _this.myRequestStack.shift();
-        if (_this.debug)
-            console.log('processing request:', _this.cReq);
+        //        if (_this.debug)
+        //            console.log('processing request:', _this.cReq);
         if (_this.cReq.type === "setup") {
             _this.setup(_this.cReq.data.tableName, _this.cReq.data.dbConfig, function (data) {
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "addToPivotList") {
-            _this.addToPivotList(_this.cReq.data.field, { key: _this.cReq.data.key, aggregation: _this.cReq.data.aggregation }, function (data) {
+        else if (_this.cReq.type === "dimension") {
+            _this.dimension(_this.cReq.data.field, { key: _this.cReq.data.key, aggregation: _this.cReq.data.aggregation }, function (data) {
                 _this.cReq.cb({ type: 'data', data: data });
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "filterFixDimension") {
-            _this.filterFixDimension(_this.cReq.data.filterType, _this.cReq.data.field, _this.cReq.data.filters, function (data) {
+        else if (_this.cReq.type === "filter") {
+            _this.filter(_this.cReq.data.filterType, _this.cReq.data.field, _this.cReq.data.filters, function (data) {
                 _this.cReq.cb({ type: 'data', data: data });
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
@@ -458,8 +467,8 @@ nodeCrossFilter.prototype.processRequestStack = function () {
 
 process.on('message', function (m) {
     var _this = this;
-    if (_this.debug)
-        console.log('CHILD got message:', m);
+    //    if (_this.debug)
+    //        console.log('CHILD got message:', m);
     _this.requestCrossfilterService(m, function (data) {
         process.send(data);
         data = null;
