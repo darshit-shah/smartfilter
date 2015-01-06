@@ -46,6 +46,9 @@ Here, 'options' is a JSON parameter which contains two keys
 1) type: here you need to tell what operations you want to perform. Right now you can specify one of ['connct', 'dimension', 'filter', 'data', 'count']
 2) data: here you need to specify supporting data for specified type. Details about supporting data is given further in this document.
 
+
+
+
 #### Connect
 
 First of all you have to connect to a specific table of your database. For this, you need to pass database connection configurations and table name as supporting data.
@@ -85,6 +88,9 @@ nodeCrossFilter.requestCrossfilterService({
 
 ```
 
+
+
+
 #### Dimension
 
 Once you are successfully connected, you can add dimension to create new pivot definition. For this you need to provide Dimension Field, Measure Field and Aggregation Type on measure as supporting data.
@@ -112,6 +118,9 @@ nodeCrossFilter.requestCrossfilterService({
   });
 
 ```
+
+
+
 
 #### Filter
 
@@ -141,7 +150,10 @@ nodeCrossFilter.requestCrossfilterService({
 
 ```
 
-##### Data
+
+
+
+#### Data
 
 Now if you want to fetch raw records from base table after applying all filter conditions, you can use below code.
 
@@ -163,7 +175,10 @@ nodeCrossFilter.requestCrossfilterService({
 
 ```
 
-##### Count
+
+
+
+#### Count
 
 Now if you just want count of raw records from base table after applying all filter conditions, you can use below code.
 
