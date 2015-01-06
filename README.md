@@ -201,3 +201,51 @@ nodeCrossFilter.requestCrossfilterService({
 ```
 
 
+## Integrated Example
+
+Below is an integrated example which will do follwing steps. Also I have explained how it is different from regular filter operations.
+
+1. Connect to mysql database
+2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
+3. Add Filter Qtr = 'Q1'
+4. Modify Filter Qtr in ['Q1', 'Q2']
+5. Modify Filter Qtr = 'Q2'
+
+```js
+//create new instance of node-cross-filter
+var nodeCrossFilter = require('node-cross-filter');
+//database connection setting.
+var dbConfig = { type: "database", databaseType: 'mysql', database: 'DarshitShah', host: "54.251.110.52", port: "3306", user: "guest", password: "guest", multipleStatements: false };
+console.log('connnecting to database...\n\n');
+
+//connect node-cross-filter to database
+nodeCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: "Stock", dbConfig: dbConfig} }, function (output) {
+    if (output.type !== 'error') {
+        //add dimension: 'Type'
+        nodeCrossFilter.requestCrossfilterService({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
+            if (output.type !== 'error') {
+                console.log("Result:", output.data, '\n\n');
+                //add filter: Qtr in ["Q1"]
+                nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
+                    if (output.type !== 'error') {
+                        console.log("Result:", output.data, '\n\n');
+                        //add filter: Qtr in ["Q1", "Q2"]
+                        nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
+                            if (output.type !== 'error') {
+                                console.log("Result:", output.data, '\n\n');
+                                //add filter: Qtr in ["Q2"]'
+                                nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
+                                    if (output.type !== 'error') {
+                                        console.log("Result:", output.data, '\n\n');
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+});
+
+```
