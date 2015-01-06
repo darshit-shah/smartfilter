@@ -141,7 +141,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 ```
 
-#### Data
+##### Data
 
 Now if you want to fetch raw records from base table after applying all filter conditions, you can use below code.
 
@@ -163,7 +163,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 ```
 
-#### Count
+##### Count
 
 Now if you just want count of raw records from base table after applying all filter conditions, you can use below code.
 
