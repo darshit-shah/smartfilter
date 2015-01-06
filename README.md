@@ -49,7 +49,7 @@ Here, 'options' is a JSON parameter which contains two keys
 
 
 
-#### Connect
+#### Connect To Database
 
 First of all you have to connect to a specific table of your database. For this, you need to pass database connection configurations and table name as supporting data.
 
@@ -91,7 +91,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 
 
-#### Dimension
+#### Add Pivot
 
 Once you are successfully connected, you can add dimension to create new pivot definition. For this you need to provide Dimension Field, Measure Field and Aggregation Type on measure as supporting data.
 
@@ -122,7 +122,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 
 
-#### Filter
+#### Apply Filter
 
 After you have created a pivot definition, you can specify your filter condition. To apply a filter you need to provide Column Name on which you want to apply a filter, type of filter (like 'in' or 'range') and array of values as supporting parameters.
 
@@ -153,7 +153,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 
 
-#### Data
+#### Fetch Raw Data
 
 Now if you want to fetch raw records from base table after applying all filter conditions, you can use below code.
 
@@ -178,7 +178,7 @@ nodeCrossFilter.requestCrossfilterService({
 
 
 
-#### Count
+#### Fetch Count
 
 Now if you just want count of raw records from base table after applying all filter conditions, you can use below code.
 
@@ -217,53 +217,51 @@ var dbConfig = { type: "database", databaseType: 'mysql', database: 'DarshitShah
 
 //Step 1. Connect to mysql database
 nodeCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: "Stock", dbConfig: dbConfig} }, function (output) {
-    if (output.type !== 'error') {
+  if (output.type !== 'error') {
+    /*
+    Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
+    Both traditional and node-cross-filter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
+    But node-cross-filter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
+    */
+    nodeCrossFilter.requestCrossfilterService({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
+      if (output.type !== 'error') {
         /*
-        Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
-        Both traditional and node-cross-filter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
-        But node-cross-filter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
+        Step 3. Apply Filter Qtr = 'Q1'
+        Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
+        And same as step 2, it will store query and result in cache
         */
-        nodeCrossFilter.requestCrossfilterService({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
-            if (output.type !== 'error') {
+        nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
+          if (output.type !== 'error') {
+            /*
+            Step 4. Apply Filter Qtr in ['Q1', 'Q2']
+            In Traditional Case it will fire new query like "select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"
+            But here, node-cross-filter will apply its own logic to find its result. 
+            By comparing Step 3 and current filter conditions, it will identify that there is a scope of improving filter condition. 
+            Instead of fetching all records where Qtr is either Q1 or Q2, it should just fetch records where Qtr is Q2 and use existing cached result for Qtr = Q1 from Step 3.
+            So final query would be "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
+            Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
+            And at the end it will store query and result in cache.
+            */
+            nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
+              if (output.type !== 'error') {
                 /*
-                Step 3. Apply Filter Qtr = 'Q1'
-                Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
-                And same as step 2, it will store query and result in cache
+                Step 5. Apply Filter Qtr = 'Q2'
+                Again here in traditional approach you will fire query like "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
+                guess what, node-cross-filter has already cached this query's and its output in Step 4.
+                So result is returned directly from cache without even touching database.
                 */
-                nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
-                    if (output.type !== 'error') {
-                        console.log("Result:", output.data, '\n\n');
-                        /*
-                        Step 4. Apply Filter Qtr in ['Q1', 'Q2']
-                        In Traditional Case it will fire new query like "select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"
-                        But here, node-cross-filter will apply its own logic to find its result. 
-                        By comparing Step 3 and current filter conditions, it will identify that there is a scope of improving filter condition. 
-                        Instead of fetching all records where Qtr is either Q1 or Q2, it should just fetch records where Qtr is Q2 and use existing cached result for Qtr = Q1 from Step 3.
-                        So final query would be "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
-                        Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
-                        And at the end it will store query and result in cache.
-                        */
-                        nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
-                            if (output.type !== 'error') {
-                                console.log("Result:", output.data, '\n\n');
-                                /*
-                                Step 5. Apply Filter Qtr = 'Q2'
-                                Again here in traditional approach you will fire query like "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
-                                guess what, node-cross-filter has already cached this query's and its output in Step 4.
-                                So result is returned directly from cache without even touching database.
-                                */
-                                nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
-                                    if (output.type !== 'error') {
-                                        console.log("Result:", output.data, '\n\n');
-                                    }
-                                });
-                            }
-                        });
-                    }
+                nodeCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
+                  if (output.type !== 'error') {
+                    console.log("Result:", output.data, '\n\n');
+                  }
                 });
-            }
+              }
+            });
+          }
         });
-    }
+      }
+    });
+  }
 });
 
 ```
