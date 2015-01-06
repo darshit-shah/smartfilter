@@ -102,9 +102,9 @@ Here is a sample code to create a pivot on 'Type' as Dimension and 'Sum' of 'Vol
 nodeCrossFilter.requestCrossfilterService({ 
   type: 'dimension', 
   data: { 
-    field: 'Type', 
-    key: 'Volume', 
-    aggregation: 'sum'
+    field: 'Type', //Column name of Dimension field
+    key: 'Volume', //Column name of Measure field
+    aggregation: 'sum'//type of aggregation which needs to be applied on measure
     } 
   }, function (output) {
     if (output.type !== 'error') {
@@ -133,9 +133,9 @@ Here is a sample code to add filter on 'Qtr' column, with type of filter as 'in'
 nodeCrossFilter.requestCrossfilterService({ 
   type: 'filter', 
   data: { 
-    field: 'Qtr', 
-    filters: ['Q1', 'Q2'], 
-    filterType: 'in'
+    field: 'Qtr', //Column name on which filter needs to be applied
+    filterType: 'in', //type of filter. 'in' means from list of values, 'range' means between
+    filters: ['Q1', 'Q2'] // Qtr should be either 'Q1' or 'Q2'
     }    
   }, function (output) {
     if (output.type !== 'error') {
@@ -160,7 +160,7 @@ Now if you want to fetch raw records from base table after applying all filter c
 ```js
 
 nodeCrossFilter.requestCrossfilterService({ 
-  type: 'data', 
+  type: 'data', // fetch raw data
   data: {  }
   }, function (output) {
     if (output.type !== 'error') {
@@ -185,7 +185,7 @@ Now if you just want count of raw records from base table after applying all fil
 ```js
 
 nodeCrossFilter.requestCrossfilterService({ 
-  type: 'count', 
+  type: 'count', //fetch count
   data: {  }
   }, function (output) {
     if (output.type !== 'error') {
@@ -199,3 +199,5 @@ nodeCrossFilter.requestCrossfilterService({
   });
   
 ```
+
+
