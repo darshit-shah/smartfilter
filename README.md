@@ -201,11 +201,11 @@ nodeCrossFilter.requestCrossfilterService({
 ```
 
 
-## Why To with an Example
+## Why node-cross-filter?
 
-In this section I want to explain "Why should anybody use node-cross-filter" instead of writing queries or logic manually?
-Let me explain you with appropriate example which will compare traditional approach and node-cross-filter's approach to provide solution.
+In this section I want to explain "Why should anybody use node-cross-filter" instead of writing queries or logic manually in traditional way?
 
+Let me explain you with appropriate example which will compare traditional approach and node-cross-filter's approach  of providing solution.
 
 ```js
 
@@ -268,7 +268,6 @@ nodeCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: 
 
 ```
 
+Also, it internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant database specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in for respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output. And I guess it is damn simple, isn't it?
 
-Very first answer is, it internally uses another module named "node-database-connectors" for converting sepcified JSON to relevant database specific query (Right now it supports mysql, elasticsearch and google-big-query). 
-
-But as you know there are other ORMs also available in market then why should you use "node-cross-filter"? 
+Later.
