@@ -266,6 +266,6 @@ nodeCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: 
 
 ```
 
-Also, it internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant database specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in for respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output. And I guess it is damn simple, isn't it?
+Also, it internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant database specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output. And I guess it is damn simple, isn't it?
 
 Later.
