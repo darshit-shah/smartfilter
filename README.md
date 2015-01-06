@@ -142,7 +142,43 @@ nodeCrossFilter.requestCrossfilterService({
 ```
 
 #### Data
-To be finished.
+
+Now if you want to fetch raw records from base table after applying all filter conditions, you can use below code.
+
+```js
+
+nodeCrossFilter.requestCrossfilterService({ 
+  type: 'data', 
+  data: {  }
+  }, function (output) {
+    if (output.type !== 'error') {
+      //In this case operation is completed successsfully.
+      console.log('Success', output);
+    }
+    else {
+      //In this case some error has occured.
+      console.log('Fail', output);
+    }
+  });
+
+```
 
 #### Count
-To be finished.
+
+Now if you just want count of raw records from base table after applying all filter conditions, you can use below code.
+
+```js
+
+nodeCrossFilter.requestCrossfilterService({ 
+  type: 'count', 
+  data: {  }
+  }, function (output) {
+    if (output.type !== 'error') {
+      //In this case operation is completed successsfully.
+      console.log('Success', output);
+    }
+    else {
+      //In this case some error has occured.
+      console.log('Fail', output);
+    }
+  });
