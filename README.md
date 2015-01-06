@@ -24,9 +24,8 @@ var nodeCrossFilter = require('node-cross-filter');
 
 You can use above line for multiple time in your applocation. Each include will create new object of node-cross-filter as each object will store database configuration, dimensions, filters and previous results in memory.
 
-#### Configurations
+##### Debug Mode
 
-Right now only once configuration property is available to turn debug mode on/off.
 By default debug mode is on which will print debugger information on console. You can tuen it off anytime using following code
 
 ```js
@@ -35,13 +34,16 @@ nodeCrossFilter.debug = false;
 
 ```
 
-#### Methods
+### How To?
 
-For methods also we have only single method requestCrossfilterService which will take options as input and will get output in callback function.
+node-cross-filter is build on message passing mechanism. This means whatever you want to do you only need to call single service "requestCrossfilterService". This service will accept "options" as first parameter and "callback_method" as second parameter. It will identify what to do from "options" which you have provided and once it is done, it will call "callback_method" which will have output.
 
-##### Setup
 
-First of all you have to configure setup info which includes table name and database configurations. Here is a sample code to connect "Stock" table of mysql database 
+#### Connect
+
+First of all you have to connect to a specific table of your database. To enable this, you need to pass database configuration and table name. 
+
+Here is a sample code to connect to "Stock" table of given mysql database. 
 
 ```js
 
