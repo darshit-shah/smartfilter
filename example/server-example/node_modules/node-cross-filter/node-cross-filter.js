@@ -373,7 +373,7 @@ nodeCrossFilter.prototype.createToExternalDatabase = function (dimension, query,
     });
 }
 
-nodeCrossFilter.prototype.setup = function (tblName, config, cb) {
+nodeCrossFilter.prototype.connect = function (tblName, config, cb) {
     var _this = this;
     _this.tableName = tblName;
     _this.connectionIdentifier = require('node-database-connectors');
@@ -424,34 +424,34 @@ nodeCrossFilter.prototype.processRequestStack = function () {
         _this.cReq = _this.myRequestStack.shift();
         //        if (_this.debug)
         //            console.log('processing request:', _this.cReq);
-        if (_this.cReq.type === "setup") {
-            _this.setup(_this.cReq.data.tableName, _this.cReq.data.dbConfig, function (data) {
+        if (_this.cReq.type.toLowerCase() === "connect") {
+            _this.connect(_this.cReq.data.tableName, _this.cReq.data.dbConfig, function (data) {
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "dimension") {
+        else if (_this.cReq.type.toLowerCase() === "dimension") {
             _this.dimension(_this.cReq.data.field, { key: _this.cReq.data.key, aggregation: _this.cReq.data.aggregation }, function (data) {
                 _this.cReq.cb({ type: 'data', data: data });
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "filter") {
+        else if (_this.cReq.type.toLowerCase() === "filter") {
             _this.filter(_this.cReq.data.filterType, _this.cReq.data.field, _this.cReq.data.filters, function (data) {
                 _this.cReq.cb({ type: 'data', data: data });
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "getData") {
+        else if (_this.cReq.type.toLowerCase() === "data") {
             _this.getData(_this.cReq.data.from, _this.cReq.data.to, function (data) {
                 _this.cReq.cb({ type: 'records', data: data });
                 _this.processRequestRunning = false;
                 _this.processRequestStack();
             });
         }
-        else if (_this.cReq.type === "getCount") {
+        else if (_this.cReq.type.toLowerCase() === "count") {
             _this.getCount(function (data) {
                 _this.cReq.cb({ type: 'count', data: data });
                 _this.processRequestRunning = false;
