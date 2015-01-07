@@ -27,6 +27,7 @@ AxiomCrossFilterClient = {
             self.hideMessage();
         });
         self.crossFilter_socket.on('connectSuccess', function (data) {
+            document.querySelector('#statusMessage').innerText = JSON.stringify(data);
             self.fetchCount();
         });
         self.crossFilter_socket.on('data', function (data) {
@@ -74,12 +75,7 @@ AxiomCrossFilterClient = {
                     for (var j = 0; j < data[keys[i]].length; j++) {
                         stringArr.push('<tr>');
                         stringArr.push('<td>');
-                        if (data[keys[i]][j] && data[keys[i]][j][keys[i]] && data[keys[i]][j][keys[i]].toLowerCase() === "pk_id") {
-                            stringArr.push("Total Records");
-                        }
-                        else {
-                            stringArr.push(data[keys[i]][j][keys[i]]);
-                        }
+                        stringArr.push(data[keys[i]][j][keys[i]]);
                         stringArr.push('</td>');
                         stringArr.push('<td>');
                         stringArr.push(self.numberWithCommas(data[keys[i]][j][self.dimension[keys[i].toLowerCase()].measure.name]));
@@ -306,13 +302,13 @@ AxiomCrossFilterClient = {
         })
         .attr("fill", "#fff");
     },
-    setup: function () {
+    connect: function () {
         "use strict";
         var self = this;
         var tableName = prompt("Please enter table ref number", "Stock");
         document.querySelector('#statusMessage').innerText = 'Trying to connect to ' + tableName + ' table ....';
 
-        self.crossFilter_socket.emit('setup', { tableName: tableName, dbConfig: { type: "database", databaseType: 'mysql', database: 'DarshitShah', host: "54.251.110.52", port: "3306", user: "guest", password: "guest", cacheResponse: false, multipleStatements: false} });
+        self.crossFilter_socket.emit('connect', { tableName: tableName, dbConfig: { type: "database", databaseType: 'mysql', database: 'DarshitShah', host: "54.251.110.52", port: "3306", user: "guest", password: "guest", cacheResponse: false, multipleStatements: false} });
     },
     addDimension: function () {
         "use strict";
@@ -415,13 +411,13 @@ AxiomCrossFilterClient = {
         "use strict";
         var self = this;
         self.showMessage("Fetching Data");
-        self.crossFilter_socket.emit('getData', { from: 0, to: 100 });
+        self.crossFilter_socket.emit('data', { from: 0, to: 100 });
     },
     fetchCount: function () {
         "use strict";
         var self = this;
         self.showMessage("Fetching Count");
-        self.crossFilter_socket.emit('getCount', {});
+        self.crossFilter_socket.emit('count', {});
     },
     showMessage: function (msg) {
         "use strict";

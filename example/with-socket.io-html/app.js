@@ -1,7 +1,6 @@
 var express = require('express');
 var connect = require('connect');
 var nodeCrossFilter = require('node-cross-filter');
-
 var app = module.exports = express.createServer();
 
 var MemoryStore = new express.session.MemoryStore();
@@ -40,39 +39,39 @@ function connectSocket() {
     var crossFilter = io
     .of('/crossFilter')
     .on('connection', function (socket) {
-        socket.on('setup', function (data) {
+        socket.on('connect', function (data) {
             if (socket.crossFilterProcess === undefined) {
-                socket.crossFilterProcess = nodeCrossFilter;
-                socket.crossFilterProcess.requestCrossfilterService({ type: "setup", data: data }, function (output) {
+                socket.crossFilterProcess = new nodeCrossFilter();
+                socket.crossFilterProcess.requestCrossfilterService({ type: "connect", data: data }, function (output) {
                     socket.emit(output.type, output.data);
                 });
             }
             else {
-                socket.emit('error', 'Setup is one time excercise');
+                socket.emit('error', 'Connect is one time excercise');
             }
         });
-        socket.on('addToPivotList', function (data) {
+        socket.on('dimension', function (data) {
             socket.crossFilterProcess.requestCrossfilterService({ type: "dimension", data: data }, function (output) {
                 socket.emit(output.type, output.data);
             });
         });
-        socket.on('filterFixDimension', function (data) {
+        socket.on('filter', function (data) {
             socket.crossFilterProcess.requestCrossfilterService({ type: "filter", data: data }, function (output) {
                 socket.emit(output.type, output.data);
             });
         });
         socket.on('disconnect', function (data) {
-            socket.crossFilterProcess = null;
-            if (socket.c != null)
-                socket.c.end();
-        });
-        socket.on('getData', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "getData", data: data }, function (output) {
+            socket.crossFilterProcess.requestCrossfilterService({ type: "disconnect", data: data }, function (output) {
                 socket.emit(output.type, output.data);
             });
         });
-        socket.on('getCount', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "getCount", data: data }, function (output) {
+        socket.on('data', function (data) {
+            socket.crossFilterProcess.requestCrossfilterService({ type: "data", data: data }, function (output) {
+                socket.emit(output.type, output.data);
+            });
+        });
+        socket.on('count', function (data) {
+            socket.crossFilterProcess.requestCrossfilterService({ type: "count", data: data }, function (output) {
                 socket.emit(output.type, output.data);
             });
         });
@@ -110,15 +109,3 @@ function connectSocket() {
     //        });
     //    });
 }
-
-process.on('uncaughtException', function (err) {
-    console.log('axiom uncaughtException in nodetest.js', err);
-});
-
-app.on('close', function () {
-    console.log('close');
-});
-
-process.on('exit', function () {
-    console.log('About to exit.');
-});
