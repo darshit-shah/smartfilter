@@ -10,14 +10,15 @@ Crossfilter works only after you transfer data from respective data-provider lik
 
 Compared to Crossfilter (which is extreamly fast because of its own algorithm for indexing data), performace of node-cross-filter is bit poor because overhead of connecting to another data-source is added on top of performing actual operations but other other hand, it overcomes the biggest problem of Crossfilter i.e. keeping all data in memory. When you are working with big data which can not be stored in memory, you can not use Crossfilter.
 
-Also, node-cross-filter internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant data-provider specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output.
-
-
 ## Why node-cross-filter?
 
-Here want to explain "Why should anybody use node-cross-filter" instead of writing queries or logic manually in traditional way?
+The obvious question here would be, "Why should anybody use node-cross-filter" instead of writing queries or logic manually in traditional way?
 
-Let me explain you with appropriate example which will compare traditional approach and node-cross-filter's approach  of providing solution.
+First of all, node-cross-filter internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant data-provider specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output.
+
+Second and most important reason is "Unlike traditional way, node-cross-filter applied its own brain to identify fastest way to fetch result from data-provider itself." 
+
+Let me explain you with an example which will compare Traditional approach and node-cross-filter's approach to perform same operations.
 
 ##### 1. Connect to your own data-provider
 
