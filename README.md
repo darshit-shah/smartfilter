@@ -1,5 +1,7 @@
 # node-cross-filter
 
+**Everyone _must_ attend the meeting at 5 o'clock today.**
+
 This is a node.js module bundled with Node Package Manager(NPM). It is written in pure javascript and does not require any compilation.
 
 ## What is node-cross-filter?
