@@ -4,7 +4,7 @@ This is a node.js module bundled with Node Package Manager(NPM). It is written i
 
 ## What is node-cross-filter?
 
-node-cross-filter is a node module which works on the concept of [Crossfilter](http://square.github.io/crossfilter/).
+node-cross-filter works on the concept of very popular and efficient library called [Crossfilter](http://square.github.io/crossfilter/).
 
 Crossfilter works only after you transfer data from respective data-provider like some database to Crossfilter and is available in memory. On the other hand, node-cross-filter doesn't need raw-data at all. Instead it creates data-provider specific query and fetch result from it directly. 
 
