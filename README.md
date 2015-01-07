@@ -46,6 +46,9 @@ Again here in traditional approach you will fire query like *"select Type, sum(V
 
 guess what, node-cross-filter has already cached this query's and its output in Step 4. So `result is returned directly from cache without even touching database.`
 
+
+# API Reference
+
 ## Install
 
 ```sh
