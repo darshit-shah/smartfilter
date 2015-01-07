@@ -15,6 +15,11 @@ function nodeCrossFilter() {
     this.myRequestStack = [];
     this.processRequestRunning = false;
     this.cReq = null;
+
+    if (this.debug)
+        console.log(' ******************* initialized');
+
+    return this;
 }
 
 nodeCrossFilter.prototype.getCount = function (cb) {
@@ -459,8 +464,11 @@ nodeCrossFilter.prototype.processRequestStack = function () {
             });
         }
         else {
-            console.log('unknown type: ' + _this.cReq.type + ' would kill this process');
-            process.exit(0);
+            var _this = this;
+            if (_this.c != null)
+                _this.c.end();
+
+            console.log('unknown type: ' + _this.cReq.type + ' would end connection');
         }
     }
 }
@@ -486,4 +494,4 @@ process.on('exit', function () {
     console.log('About to exit.');
 });
 
-module.exports = new nodeCrossFilter();
+module.exports = nodeCrossFilter;
