@@ -6,17 +6,17 @@ This is a node.js module bundled with Node Package Manager(NPM). It is written i
 
 node-cross-filter works on the concept of very popular and efficient library called [Crossfilter](http://square.github.io/crossfilter/).
 
-Crossfilter works only after you transfer data from respective data-provider like some database to Crossfilter and is available in memory. On the other hand, **node-cross-filter doesn't need raw-data in memory**. Instead it creates data-provider specific query and fetch result from it directly. 
+Crossfilter works only after you transfer data from respective data-provider like some database to Crossfilter and is available in memory. On the other hand, *node-cross-filter doesn't need raw-data in _memory_*. Instead it creates data-provider specific query and fetch result from it directly. 
 
-Compared to Crossfilter (which is extreamly fast because of its own algorithm for indexing data), performace of node-cross-filter is bit poor because overhead of connecting to another data-source is added on top of performing actual operations but other other hand, it overcomes the biggest problem of Crossfilter i.e. keeping all data in memory. **When you are working with _big_ _data_ which can not be stored in memory, you can not use Crossfilter**.
+Compared to Crossfilter (which is extreamly fast because of its own algorithm for indexing data), performace of node-cross-filter is bit poor because overhead of connecting to another data-source is added on top of performing actual operations but other other hand, it overcomes the biggest problem of Crossfilter i.e. keeping all data in memory. *When you are working with _big_ _data_ which can not be stored in memory, you can not use Crossfilter*.
 
 ## Why node-cross-filter?
 
-The obvious question here would be, "Why should anybody use node-cross-filter" instead of writing queries or logic manually in traditional way?
+The obvious question here would be, *"Why should anybody use node-cross-filter"* instead of writing queries or logic manually in traditional way?
 
 First of all, node-cross-filter internally uses another module called "node-database-connectors" for converting sepcified JSON to relevant data-provider specific query (Right now it supports mysql, elasticsearch and google-big-query). So whatever database it is, either it is mysql, elasticsearch or google-big-query. You don't need to learn how to write query in respective database. Only thing you need to learn is "How to use node-cross-filter" to get desired output.
 
-Second and most important reason is, **Unlike traditional way, node-cross-filter applies its own _brain_ to identify fastest way to fetch result from data-provider itself.**
+Second and most important reason is, *Unlike traditional way, node-cross-filter _applies_ _its_ _own_ _brain_ to identify _fastest_ _way_ to fetch result from data-provider itself.*
 
 Let me explain you with an example which will compare Traditional approach and node-cross-filter's approach to perform same operations.
 
