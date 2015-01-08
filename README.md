@@ -40,12 +40,10 @@ But here, Smartfilter will `apply its own logic` to find its result. By comparin
 
 Again here in traditional approach you will fire query like *"select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"*
 
-guess what, Smartfilter has already cached this query's and its output in Step 4. So `result is returned directly from cache without even touching database.`
+guess what, Smartfilter has already cached this query's and its output in Step 4. So `result is returned directly from cache without even touching database`.
 
 
-# API Reference
-
-## Install
+## API Reference
 
 ```sh
 
