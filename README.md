@@ -6,9 +6,9 @@ This is a node module bundled with Node Package Manager(NPM). It is a javascript
 
 Smartfilter is inspired from a library called [Crossfilter](http://square.github.io/crossfilter/) which is fast browser side in-memory filtering mechanism across multiple dimensions and measures. One of the major limitation of using Crossfilter is to keep data in memory on client side in browser memory. There are other modules available to create crossfilter like functionality on server side. However, in big data world it is costly to transfer data from source to either client or server side functions. `Smartfilter doesn't need raw data in memory either on client side or on server side.` It creates data-provider specific query and fetch result directly from source. Currently, it supports MySQL as data source however soon we will bring Elasticsearch, Hadoop and Big table connectors.
 
-## How Smartfilter work?
+## How Smartfilter works?
 
-Smartfilter creates dynamic queries with smart filter conditions based on previous filters applied on data source. Unlike usual way of applying all filters, Smartfilter helps you fire a query only if it’s needed and saves load on your database. Thus improves interactions with your Big data sources. 
+Smartfilter creates `dynamic queries with smart filter conditions` based on previous filters applied on data source. Unlike usual way of applying all filters, Smartfilter helps you fire a query only if it’s needed and saves load on your database. Thus improves interactions with your Big data sources. 
 
 Smartfilter comprise of another module called "node-database-connectors" for converting given JSON parameters to relevant data-source specific query. Right now it supports mysql, elasticsearch and google-big-query as data sources. So a common filter structure allows us to fire queries on data sources of your choice.
 
