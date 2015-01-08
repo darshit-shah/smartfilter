@@ -20,10 +20,6 @@ function Smartfilter() {
     var objConnection = undefined;
     var cConn = undefined;
 
-    if (debug)
-        console.log(' ******************* initialized');
-
-
     function getCount(cb) {
 
         var filterCondition = createWhereCondition(undefined);

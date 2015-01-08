@@ -1,6 +1,5 @@
 {
-  "name": "Smartfilter",
-  "description": "Smartfilter creates dynamic queries with smart filter conditions based on previous filters applied on data source. Unlike usual way of applying all filters, Smartfilter helps you fire a query only if it’s needed and saves load on your database.",
+  "name": "smartfilter",
   "license": "Apache License 2.0",
   "main": "Smartfilter.js",
   "repository": {
@@ -22,5 +21,10 @@
   "homepage": "https://github.com/darshit-shah/Smartfilter",
   "directories": {
     "example": "example"
-  }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "description": "This is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.",
+  "version": "0.0.2"
 }
