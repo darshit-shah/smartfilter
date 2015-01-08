@@ -1,6 +1,6 @@
 var express = require('express');
 var connect = require('connect');
-var nodeCrossFilter = require('node-cross-filter');
+var childProcess = require('child_process');
 var app = module.exports = express.createServer();
 
 var MemoryStore = new express.session.MemoryStore();
@@ -37,75 +37,34 @@ function connectSocket() {
     ]);
 
     var crossFilter = io
-    .of('/crossFilter')
-    .on('connection', function (socket) {
-        socket.on('connect', function (data) {
-            if (socket.crossFilterProcess === undefined) {
-                socket.crossFilterProcess = new nodeCrossFilter();
-                socket.crossFilterProcess.requestCrossfilterService({ type: "connect", data: data }, function (output) {
-                    socket.emit(output.type, output.data);
-                });
-            }
-            else {
-                socket.emit('error', 'Connect is one time excercise');
-            }
-        });
-        socket.on('dimension', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "dimension", data: data }, function (output) {
-                socket.emit(output.type, output.data);
+        .of('/crossFilter')
+        .on('connection', function (socket) {
+            socket.on('connect', function (data) {
+                if (socket.mySmartfilter === undefined) {
+                    socket.mySmartfilter = childProcess.fork(__dirname + '/Smartfilter.js');
+                    socket.mySmartfilter.on("message", function (output) {
+                        socket.emit(output.type, output.data);
+                    });
+                    socket.mySmartfilter.send({ type: "connect", data: data });
+                }
+                else {
+                    socket.emit('errorMessage', 'Setup is one time excercise');
+                }
+            });
+            socket.on('dimension', function (data) {
+                socket.mySmartfilter.send({ type: "dimension", data: data });
+            });
+            socket.on('filter', function (data) {
+                socket.mySmartfilter.send({ type: "filter", data: data });
+            });
+            socket.on('disconnect', function (data) {
+                socket.mySmartfilter.send({ type: "disconnect", data: data });
+            });
+            socket.on('data', function (data) {
+                socket.mySmartfilter.send({ type: "data", data: data });
+            });
+            socket.on('count', function (data) {
+                socket.mySmartfilter.send({ type: "count", data: data });
             });
         });
-        socket.on('filter', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "filter", data: data }, function (output) {
-                socket.emit(output.type, output.data);
-            });
-        });
-        socket.on('disconnect', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "disconnect", data: data }, function (output) {
-                socket.emit(output.type, output.data);
-            });
-        });
-        socket.on('data', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "data", data: data }, function (output) {
-                socket.emit(output.type, output.data);
-            });
-        });
-        socket.on('count', function (data) {
-            socket.crossFilterProcess.requestCrossfilterService({ type: "count", data: data }, function (output) {
-                socket.emit(output.type, output.data);
-            });
-        });
-    });
-
-    //    var crossFilter = io
-    //    .of('/crossFilter')
-    //    .on('connection', function (socket) {
-    //        socket.on('setup', function (data) {
-    //            if (socket.crossFilterProcess === undefined) {
-    //                socket.crossFilterProcess = childProcess.fork(__dirname + '/AxiomCrossFilterService.js');
-    //                socket.crossFilterProcess.on("message", function (output) {
-    //                    socket.emit(output.type, output.data);
-    //                });
-    //                socket.crossFilterProcess.send({ type: "setup", data: data });
-    //            }
-    //            else {
-    //                socket.emit('errorMessage', 'Setup is one time excercise');
-    //            }
-    //        });
-    //        socket.on('addToPivotList', function (data) {
-    //            socket.crossFilterProcess.send({ type: "addToPivotList", data: data });
-    //        });
-    //        socket.on('filterFixDimension', function (data) {
-    //            socket.crossFilterProcess.send({ type: "filterFixDimension", data: data });
-    //        });
-    //        socket.on('disconnect', function (data) {
-    //            socket.crossFilterProcess.send({ type: "disconnect", data: data });
-    //        });
-    //        socket.on('getData', function (data) {
-    //            socket.crossFilterProcess.send({ type: "getData", data: data });
-    //        });
-    //        socket.on('getCount', function (data) {
-    //            socket.crossFilterProcess.send({ type: "getCount", data: data });
-    //        });
-    //    });
 }

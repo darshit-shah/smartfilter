@@ -1,25 +1,24 @@
 //create new instance of node-cross-filter
-var nodeCrossFilter = new require('node-cross-filter');
-
+var Smartfilter = new require('Smartfilter');
 //database connection setting.
 var dbConfig = { type: "database", databaseType: 'mysql', database: 'DarshitShah', host: "54.251.110.52", port: "3306", user: "guest", password: "guest", multipleStatements: false };
-var myCrossFilter = new nodeCrossFilter();
+var mySmartfilter = new Smartfilter();
 //Step 1. Connect to mysql database
-myCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: "Stock", dbConfig: dbConfig} }, function (output) {
+mySmartfilter.SmartfilterRequest({ type: "connect", data: { tableName: "Stock", dbConfig: dbConfig} }, function (output) {
     if (output.type !== 'error') {
         /*
         Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
         Both traditional and node-cross-filter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
         But node-cross-filter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
         */
-        myCrossFilter.requestCrossfilterService({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
+        mySmartfilter.SmartfilterRequest({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
             if (output.type !== 'error') {
                 /*
                 Step 3. Apply Filter Qtr = 'Q1'
                 Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
                 And same as step 2, it will store query and result in cache
                 */
-                myCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
+                mySmartfilter.SmartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
                     if (output.type !== 'error') {
                         /*
                         Step 4. Apply Filter Qtr in ['Q1', 'Q2']
@@ -31,7 +30,7 @@ myCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: "S
                         Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
                         And at the end it will store query and result in cache.
                         */
-                        myCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
+                        mySmartfilter.SmartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
                             if (output.type !== 'error') {
                                 /*
                                 Step 5. Apply Filter Qtr = 'Q2'
@@ -39,7 +38,7 @@ myCrossFilter.requestCrossfilterService({ type: "connect", data: { tableName: "S
                                 guess what, node-cross-filter has already cached this query's and its output in Step 4.
                                 So result is returned directly from cache without even touching database.
                                 */
-                                myCrossFilter.requestCrossfilterService({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
+                                mySmartfilter.SmartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
                                     if (output.type !== 'error') {
                                         console.log("Result:", output.data, '\n\n');
                                     }

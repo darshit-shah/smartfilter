@@ -1,30 +1,26 @@
 {
-  "name": "node-cross-filter",
-  "version": "0.0.7",
-  "description": "server side cross filter which will fire required queries directly in respective database",
-  "main": "node-cross-filter.js",
+  "name": "Smartfilter",
+  "description": "Smartfilter creates dynamic queries with smart filter conditions based on previous filters applied on data source. Unlike usual way of applying all filters, Smartfilter helps you fire a query only if it’s needed and saves load on your database.",
+  "license": "Apache License 2.0",
+  "main": "Smartfilter.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/darshit-shah/node-cross-filter.git"
+    "url": "https://github.com/darshit-shah/Smartfilter.git"
   },
   "keywords": [
     "crossfilter",
     "server",
-    "node-cross-filter"
+    "Smartfilter"
   ],
   "dependencies": {
     "node-database-connectors": "*"
   },
   "author": "Darshit Shah",
-  "license": "BSD",
   "bugs": {
-    "url": "https://github.com/darshit-shah/node-cross-filter/issues"
+    "url": "https://github.com/darshit-shah/Smartfilter/issues"
   },
-  "homepage": "https://github.com/darshit-shah/node-cross-filter",
+  "homepage": "https://github.com/darshit-shah/Smartfilter",
   "directories": {
     "example": "example"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
