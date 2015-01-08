@@ -40,8 +40,8 @@ function connectSocket() {
         .of('/crossFilter')
         .on('connection', function (socket) {
             socket.on('connect', function (data) {
-                if (socket.mySmartfilter === undefined) {
-                    socket.mySmartfilter = childProcess.fork(__dirname + '/Smartfilter.js');
+                if (socket.mysmartfilter === undefined) {
+                    socket.mySmartfilter = childProcess.fork(__dirname + '/smartfilterService.js');
                     socket.mySmartfilter.on("message", function (output) {
                         socket.emit(output.type, output.data);
                     });

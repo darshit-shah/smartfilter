@@ -1,5 +1,5 @@
 ﻿"use strict";
-function Smartfilter() {
+function smartfilter() {
     var debug = true;
 
     var tableName = "";
@@ -461,7 +461,7 @@ function Smartfilter() {
         }
     }
 
-    this.SmartfilterRequest = function (m, cb) {
+    this.smartfilterRequest = function (m, cb) {
 
         m.cb = cb;
         myRequestStack.push(m);
@@ -474,14 +474,4 @@ function Smartfilter() {
     return this;
 }
 
-process.on('message', function (m) {
-    if (this.Smartfilter === undefined) {
-        this.Smartfilter = new Smartfilter();
-    }
-    this.Smartfilter.SmartfilterRequest(m, function (data) {
-        process.send(data);
-        data = null;
-    });
-});
-
-module.exports = Smartfilter;
+module.exports = smartfilter;
