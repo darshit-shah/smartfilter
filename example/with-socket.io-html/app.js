@@ -52,19 +52,24 @@ function connectSocket() {
                 }
             });
             socket.on('dimension', function (data) {
-                socket.mySmartfilter.send({ type: "dimension", data: data });
+                if (socket.mySmartfilter)
+                    socket.mySmartfilter.send({ type: "dimension", data: data });
             });
             socket.on('filter', function (data) {
-                socket.mySmartfilter.send({ type: "filter", data: data });
+                if (socket.mySmartfilter)
+                    socket.mySmartfilter.send({ type: "filter", data: data });
             });
             socket.on('disconnect', function (data) {
-                socket.mySmartfilter.send({ type: "disconnect", data: data });
+                if (socket.mySmartfilter)
+                    socket.mySmartfilter.send({ type: "disconnect", data: data });
             });
             socket.on('data', function (data) {
-                socket.mySmartfilter.send({ type: "data", data: data });
+                if (socket.mySmartfilter)
+                    socket.mySmartfilter.send({ type: "data", data: data });
             });
             socket.on('count', function (data) {
-                socket.mySmartfilter.send({ type: "count", data: data });
+                if (socket.mySmartfilter)
+                    socket.mySmartfilter.send({ type: "count", data: data });
             });
         });
 }

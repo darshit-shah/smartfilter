@@ -45,7 +45,7 @@ AxiomCrossFilterClient = {
                 iDiv.style.float = 'left';
                 iDiv.style.fontSize = "14px";
                 iDiv.style.background = "#FFF";
-                iDiv.innerHTML = "<div style='font-size:14px; margin-bottom:5px; width:100%; background:#EEE; text-align:center; font-weight:bold; padding:3px;'>" + keys[i] + "</div>";
+                iDiv.innerHTML = '<div style="font-size: 14px; margin-bottom: 5px; background: #EEE; text-align: center; font-weight: bold; padding: 3px;">' + keys[i] + '<span class="reset" id="' + keys[i] + '" style="float:right; margin-left:10px;" onclick="AxiomCrossFilterClient.reset(this)">Reset</span></div>';
 
                 //iDiv.innerText =  JSON.stringify(data[keys[i]], null, 4);
                 if (self.dimension[keys[i].toLowerCase()].chartType === "pie") {
@@ -53,7 +53,6 @@ AxiomCrossFilterClient = {
                     childElement.id = 'chart';
                     childElement.style.margin = "5px";
                     iDiv.appendChild(childElement);
-                    self.dimension[keys[i].toLowerCase()].filterType = 'in';
                     self.createPieChart(data[keys[i]], keys[i], self.dimension[keys[i].toLowerCase()].measure.name);
                 }
                 else if (self.dimension[keys[i].toLowerCase()].chartType === "range") {
@@ -62,7 +61,7 @@ AxiomCrossFilterClient = {
                     childElement.style.margin = "5px";
                     iDiv.appendChild(childElement);
                     self.dimension[keys[i].toLowerCase()].filterType = 'range';
-                    self.createRangeChart(data[keys[i]], keys[i], self.dimension[keys[i].toLowerCase()].measure.name);
+                    self.createRangeChart(data[keys[i]], keys[i], self.dimension[keys[i].toLowerCase()].measure.name, self.dimension[keys[i].toLowerCase()].width);
                 }
                 else {
                     //iDiv.innerHTML = '<div id="chart">' + data[keys[i]][0][self.dimension[keys[i].toLowerCase()].measure.name] + ':' + data[keys[i]][0][] + '</div>';
@@ -73,7 +72,13 @@ AxiomCrossFilterClient = {
                     iDiv.appendChild(childElement);
                     stringArr.push('<table id="chart">');
                     for (var j = 0; j < data[keys[i]].length; j++) {
-                        stringArr.push('<tr>');
+                        var myIndex = self.dimension[keys[i].toLowerCase()].filters.indexOf(data[keys[i]][j][keys[i]].toString());
+                        if (myIndex !== -1 || self.dimension[keys[i].toLowerCase()].filters.length === 0) {
+                            stringArr.push('<tr onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+                        }
+                        else {
+                            stringArr.push('<tr style="color:#CCC" onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+                        }
                         stringArr.push('<td>');
                         stringArr.push(data[keys[i]][j][keys[i]]);
                         stringArr.push('</td>');
@@ -85,22 +90,38 @@ AxiomCrossFilterClient = {
                     stringArr.push('</table>');
                     childElement.innerHTML = stringArr.join("\n");
                 }
+                if (self.dimension[keys[i].toLowerCase()].filters.length === 0) {
+                    document.querySelector('.reset#' + keys[i]).style.display = "none";
+                }
+                else {
+                    document.querySelector('.reset#' + keys[i]).style.display = "block";
+                }
             }
             data = null;
+
             self.fetchCount();
             document.querySelector('#statusMessage').innerText = 'Success!!!';
-            self.hideMessage();
+
         });
         self.crossFilter_socket.on('message', function (data) {
             document.querySelector('#statusMessage').innerText = JSON.stringify(data);
             self.hideMessage();
         });
     },
-    createRangeChart: function (data, key, measure) {
+    createRangeChart: function (data, key, measure, width) {
         "use strict";
         var self = this;
         var h = 300;
-        var w = 500;
+        var w = width;
+        if (w.trim() === '' || isNaN(w))
+            w = 500;
+        data.forEach(function (d) {
+            d = type(d);
+        });
+
+        var xDomain = d3.extent(data.map(function (d) { return d[key]; }));
+        var yDomain = [0, d3.max(data.map(function (d) { return d[measure]; }))];
+
         d3.select('#crossFilterContainer #' + key.toLowerCase() + ' #chart').style('width', w + 'px').style('height', h + 'px');
         var margin = { top: 10, right: 10, bottom: 100, left: 60 },
             margin2 = { top: 230, right: 10, bottom: 20, left: 60 },
@@ -161,68 +182,63 @@ AxiomCrossFilterClient = {
             .attr("class", "context")
             .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
-        function setData(data) {
-            data.forEach(function (d) {
-                d = type(d);
-            });
-            x.domain(d3.extent(data.map(function (d) { return d[key]; })));
-            y.domain([0, d3.max(data.map(function (d) { return d[measure]; }))]);
-            x2.domain(x.domain());
-            y2.domain(y.domain());
+        x.domain(xDomain);
+        y.domain(yDomain);
+        x2.domain(x.domain());
+        y2.domain(y.domain());
 
-            focus.append("path")
+        focus.append("path")
               .datum(data)
               .attr("class", "area")
               .attr("d", area);
 
-            focus.append("g")
+        focus.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height + ")")
               .call(xAxis);
 
-            focus.append("g")
+        focus.append("g")
               .attr("class", "y axis")
               .call(yAxis);
 
-            context.append("path")
+        context.append("path")
               .datum(data)
               .attr("class", "area")
               .attr("d", area2);
 
-            context.append("g")
+        context.append("g")
               .attr("class", "x axis")
               .attr("transform", "translate(0," + height2 + ")")
               .call(xAxis2);
 
-            context.append("g")
+        context.append("g")
               .attr("class", "x brush")
               .call(brush)
             .selectAll("rect")
               .attr("y", -6)
               .attr("height", height2 + 7);
 
-            if (self.dimension[key.toLowerCase()].filters.length === 2) {
-                brush.extent([self.dimension[key.toLowerCase()].filters[0], self.dimension[key.toLowerCase()].filters[1]]);
-                svg.select(".brush").call(brush);
-                x.domain(brush.empty() ? x2.domain() : brush.extent());
-                focus.select(".area").attr("d", area);
-                focus.select(".x.axis").call(xAxis);
-            }
+        if (self.dimension[key.toLowerCase()].filters.length === 2) {
+            brush.extent([self.dimension[key.toLowerCase()].filters[0], self.dimension[key.toLowerCase()].filters[1]]);
+            svg.select(".brush").call(brush);
+            x.domain(brush.empty() ? x2.domain() : brush.extent());
+            focus.select(".area").attr("d", area);
+            focus.select(".x.axis").call(xAxis);
         }
+
         function brushed() {
             x.domain(brush.empty() ? x2.domain() : brush.extent());
             focus.select(".area").attr("d", area);
             focus.select(".x.axis").call(xAxis);
-            if (brush.empty()) {
-                self.dimension[key.toLowerCase()].filters = [];
-            }
-            else {
-                self.dimension[key.toLowerCase()].filters = brush.extent();
-            }
         }
 
         function brushEnd() {
-            self.updateFilter(key);
+            if (brush.empty()) {
+                self.filterRange(key.toLowerCase(), []);
+            }
+            else {
+                self.filterRange(key.toLowerCase(), brush.extent());
+            }
         }
 
         function type(d) {
@@ -241,7 +257,7 @@ AxiomCrossFilterClient = {
             return d;
         }
 
-        setData(data);
+        //setData(data);
     },
     createPieChart: function (data, key, measure) {
         "use strict";
@@ -260,16 +276,7 @@ AxiomCrossFilterClient = {
         // select paths, use arc generator to draw
         var arcs = vis.selectAll("g.slice").data(pie).enter().append("svg:g").attr("class", "slice")
             .on("click", function (d) {
-                var myIndex = self.dimension[key.toLowerCase()].filters.indexOf(d.data[key]);
-                if (myIndex === -1) {
-                    self.dimension[key.toLowerCase()].filters.push(d.data[key]);
-                }
-                else {
-                    self.dimension[key.toLowerCase()].filters.splice(myIndex, 1);
-                }
-                if (self.dimension[key.toLowerCase()].filters.length === self.dimension[key.toLowerCase()].data.length)
-                    self.dimension[key.toLowerCase()].filters = [];
-                self.updateFilter(key);
+                self.filterSingleValue(key, d.data[key]);
             });
         arcs.append("svg:title").text(function (d) { return d.data[key] + ': ' + d.data[measure] });
         arcs.append("svg:path")
@@ -305,10 +312,26 @@ AxiomCrossFilterClient = {
     connect: function () {
         "use strict";
         var self = this;
-        var tableName = prompt("Please enter table ref number", "Stock");
+        var tableName = document.querySelector("#divConnect #databaseTableName").value;
         document.querySelector('#statusMessage').innerText = 'Trying to connect to ' + tableName + ' table ....';
 
-        self.crossFilter_socket.emit('connect', { tableName: tableName, dbConfig: { type: "database", databaseType: 'mysql', database: 'DarshitShah', host: "54.251.110.52", port: "3306", user: "guest", password: "guest", cacheResponse: false, multipleStatements: false} });
+        document.querySelector("#divConnect").style.display = "none";
+
+        self.crossFilter_socket.emit('connect', {
+            tableName: tableName,
+            dbConfig: {
+                type: "database",
+                databaseType: document.querySelector("#divConnect #databaseType").value,
+                database: document.querySelector("#divConnect #databaseName").value,
+                host: document.querySelector("#divConnect #databaseHost").value,
+                port: document.querySelector("#divConnect #databasePort").value,
+                user: document.querySelector("#divConnect #databaseUser").value,
+                password: document.querySelector("#divConnect #databasePassword").value,
+                cacheResponse: false,
+                multipleStatements: false
+            }
+        });
+
     },
     addDimension: function () {
         "use strict";
@@ -334,7 +357,8 @@ AxiomCrossFilterClient = {
                 data: [],
                 chartType: document.querySelectorAll("#chartType option")[document.querySelector("#chartType").selectedIndex].value.toLowerCase(),
                 rangeType: document.querySelectorAll('#rangeType option')[document.querySelector("#rangeType").selectedIndex].value.toLowerCase(),
-                formatType: document.querySelector("#formatType").value
+                formatType: document.querySelector("#formatType").value,
+                width: document.querySelector("#selectDimension #chartWidth").value
             };
             document.querySelector("#selectDimension").style.display = "none";
             document.querySelector('#statusMessage').innerText = 'Adding Dimension : ' + fieldName + '....';
@@ -440,5 +464,31 @@ AxiomCrossFilterClient = {
         url = url.substr(0, url.indexOf('/', 8));
         jQuery.support.cors = true;
         return url;
+    },
+    reset: function (e) {
+        var key = e.id;
+        AxiomCrossFilterClient.dimension[key.toLowerCase()].filters = [];
+        AxiomCrossFilterClient.updateFilter(key);
+    },
+    filterSingleValue: function (key, value) {
+        var self = this;
+        var myIndex = self.dimension[key.toLowerCase()].filters.indexOf(value);
+        if (myIndex === -1) {
+            self.dimension[key.toLowerCase()].filters.push(value);
+        }
+        else {
+            self.dimension[key.toLowerCase()].filters.splice(myIndex, 1);
+        }
+        if (self.dimension[key.toLowerCase()].filters.length === self.dimension[key.toLowerCase()].data.length)
+            self.dimension[key.toLowerCase()].filters = [];
+
+        self.dimension[key.toLowerCase()].filterType = 'in';
+        self.updateFilter(key);
+    },
+    filterRange: function (key, values) {
+        var self = this;
+        self.dimension[key.toLowerCase()].filterType = 'range';
+        self.dimension[key.toLowerCase()].filters = values;
+        self.updateFilter(key);
     }
 }

@@ -90,10 +90,9 @@ function smartfilter() {
         filteredDimension[dimension].filterType = filterType;
         var existingCondition = filteredDimension[dimension].filters;
         var newCondition = [];
-        var addReduceNone = -1; //None = 0, Add = 1, Reduce = 2
+        var addReduceNone = 0; //None = 0, Add = 1, Reduce = 2
         if (typeof values === "string") {
             newCondition = [values];
-            addReduceNone = 0;
         }
         else if (filterType === 'range') {
             if (values.length === 2) {

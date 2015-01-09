@@ -30,22 +30,22 @@
             font-size: 16px;
             line-height: 20px;
         }
-        #selectDimension table
+        #selectDimension table, #divConnect table
         {
             margin: 10px;
         }
         
-        #selectDimension td
+        #selectDimension td, #divConnect td
         {
             padding: 3px;
         }
         
-        #selectDimension input[type=text], select
+        #selectDimension input[type=text], select, #divConnect input[type=text]
         {
             width: 250px;
         }
         
-        #selectDimension td:nth-child(1)
+        #selectDimension td:nth-child(1), #divConnect td:nth-child(1)
         {
             width: 110px;
         }
@@ -103,6 +103,13 @@
             color: white;
             padding: 10px;
         }
+        
+        .reset
+        {
+            color: steelblue;
+            font-variant: small-caps;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -113,7 +120,6 @@
         </div>
         <div id="divContainer" style="display: none; background-color: #eee; height: 100%;">
             <div style="padding: 5px;">
-                <input type="button" value="Connect" onclick="AxiomCrossFilterClient.connect()" />
                 <input type="button" value="Add Dimenssion" onclick="AxiomCrossFilterClient.addDimension()" />
                 <!--<input type="button" value="Fetch Data" onclick="AxiomCrossFilterClient.fetchData()" />-->
                 <span id="statusMessage"></span>
@@ -121,7 +127,7 @@
             <div id="crossFilterContainer">
                 <div id="countOfRecords" style="border: 5px solid rgb(238, 238, 238); margin: 10px;
                     float: left; font-size: 11px; background: rgb(255, 255, 255); display: none;">
-                    <div style="font-size: 14px; margin-bottom: 5px; width: 100%; background: #EEE; text-align: center;
+                    <div style="font-size: 14px; margin-bottom: 5px; background: #EEE; text-align: center;
                         font-weight: bold; padding: 3px;">
                         Count of Records</div>
                     <div id="chart" style="margin: 5px; text-align: center; font-size: 14px;">
@@ -191,10 +197,82 @@
                         <input type="text" id="formatType" disabled />
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        Chart Width:
+                    </td>
+                    <td>
+                        <input type="text" id="chartWidth" />
+                    </td>
+                </tr>
             </table>
             <div style="padding: 5px; position: relative; margin-bottom: 5px; float: right; margin-right: 20px;">
                 <input type="button" value="Done" onclick="AxiomCrossFilterClient.okDimension()" />
                 <input type="button" value="Cancel" onclick="AxiomCrossFilterClient.cancelDimension()" />
+            </div>
+        </div>
+        <div id="divConnect" style="position: absolute; left: 50%; top: 200px;
+            width: 400px; margin-left: -200px; background-color: rgba(200,200,200,0.8); display: block">
+            <table style="width: 100%; padding: 5px;">
+                <tr>
+                    <td>
+                        Database Type:
+                    </td>
+                    <td>
+                        <input type="text" id="databaseType" value="mysql" disabled placeholder="mysql" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Database Host:
+                    </td>
+                    <td>
+                        <input type="text" id="databaseHost" value="54.251.110.52" placeholder="54.251.110.52"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Database Port:
+                    </td>
+                    <td>
+                        <input type="text" id="databasePort" value="3306" placeholder="3306"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Database User:
+                    </td>
+                    <td>
+                        <input type="text" id="databaseUser" value="guest" placeholder="guest"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Database Password:
+                    </td>
+                    <td>
+                        <input type="password" id="databasePassword" value="guest" placeholder="guest"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Database Name:
+                    </td>
+                    <td>
+                        <input type="text" id="databaseName" value="DarshitShah" placeholder="DarshitShah"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Table Name:
+                    </td>
+                    <td>
+                        <input type="text" id="databaseTableName" value="flightsHuge" placeholder="Stock"/>
+                    </td>
+                </tr>
+            </table>
+            <div style="padding: 5px; position: relative; margin-bottom: 5px; float: right; margin-right: 20px;">
+                <input type="button" value="Done" onclick="AxiomCrossFilterClient.connect()" />
             </div>
         </div>
         <div id="applyFilterStatus" style="display: none">
