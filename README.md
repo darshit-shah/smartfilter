@@ -1,46 +1,46 @@
-# smartfilter
+# SmartFilter
 
-This is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.
+SmartFilter is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.
 
-## What is smartfilter?
+## What is SmartFilter?
 
-smartfilter is inspired from a library called [Crossfilter](http://square.github.io/crossfilter/) which is fast browser side in-memory filtering mechanism across multiple dimensions and measures. One of the major limitation of using Crossfilter is to keep data in memory on client side in browser memory. There are other modules available to create crossfilter like functionality on server side. However, in big data world it is costly to transfer data from source to either client or server side functions. `smartfilter doesn't need raw data in memory either on client side or on server side.` It creates data-provider specific query and fetch result directly from source. Currently, it supports MySQL as data source however soon we will bring Elasticsearch, Hadoop and Big table connectors.
+SmartFilter is inspired from a library called [Crossfilter](http://square.github.io/crossfilter/) which is fast browser side in-memory filtering mechanism across multiple dimensions and measures. One of the major limitations of using Crossfilter is to keep data in memory on client side in a browser. There are few modules available to create Crossfilter like functionality on server side. However, in big data world it is costly to transfer data from a source to either client or server side functions. `SmartFilter does not need raw data in memory either on client side or on server side.`  It creates data-provider specific query and fetch results directly from the source. Currently, it supports MySQL as a data source, however soon we will bring Elasticsearch, Hadoop and Big table connectors.
 
-## How smartfilter works?
+## How SmartFilter works?
 
-smartfilter creates `dynamic queries with smart filter conditions` based on previous filters applied on data source. Unlike usual way of applying all filters, smartfilter helps you fire a query only if it’s needed and saves load on your database. Thus improves interactions with your Big data sources. 
+SmartFilter creates `dynamic queries with filter conditions` based on previous filters applied on data source. Unlike usual ways of applying all filters, SmartFilter helps you fire a query only if it is required and reduces load on your database. Thus it automatically improves interactions with your Big data sources.
 
-smartfilter comprise of another module called "node-database-connectors" for converting given JSON parameters to relevant data-source specific query. Right now it supports mysql, elasticsearch and google-big-query as data sources. So a common filter structure allows us to fire queries on data sources of your choice.
+SmartFilter comprises of another module called “node-database-connectors” for converting given JSON parameters to the relevant data-source specific query. Right now it supports MySQL, Elasticsearch and Google-big-query as data sources. So a common filter structure allows us to fire queries on data sources of your choice.
 
-Let me explain you with an example which will compare Traditional approach and smartfilter's approach to perform same operations.
+Let me explain with an example, which will compare traditional approach and SmartFilter’s approach to perform same operations.
 
 ###### Connect to your own data-provider
-For this example, I am taking reference of mysql database which has a table named "Stock" having 6500 rows and following columns
+For this example, I am taking a reference of MySQL database, which has a table named “Stock” having 6500 rows and following columns
 1. Type: This is a string type of column having only two distinct values. "Loss" or "Gain"
 2. Qtr: This is also a string type of column having four values. "Q1", "Q2", "Q3" or "Q4"
 3. Volume: This is numeric type of column.
 
-###### Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
-Both traditional and smartfilter's approach will create a query something like *"select Type, sum(Volume) from Stock group by Type".*
+###### Add pivot on "Type" field with "Sum" of "Volume" as measure
+Both traditional and SmartFilter's approach will create a query something like *"select Type, sum(Volume) from Stock group by Type".*
 
-In addition, `smartfilter will store this query and corresponding result in cache` and next time when same query is generated, it will just return result from cache without querying the database.
+In addition, `SmartFilter will store this query and corresponding result in cache` and next time when same query is generated, it will just return result from cache without querying the database.
 
 ###### Apply Filter Qtr = 'Q1'
 Here also both will create a query like *"select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type".*
 
-Same as step 2, smartfilter will also store query and result in cache to use when needed.
+Same as step 2, SmartFilter will also store query and result in cache to use when needed.
 
 ###### Apply Filter Qtr in ['Q1', 'Q2']
 
 In Traditional Case it will fire new query like *"select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"*
 
-But here, smartfilter will `apply its own logic` to find its result. By comparing Step 3 and current filter conditions, it will identify that there is a `scope of improving filter condition`. Instead of fetching all records where *Qtr is either Q1 or Q2*, it should just fetch records where *Qtr is Q2* and `use existing cached result for Qtr = Q1 from above step`. So final query would be *"select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type".* Once result is available, `it will merge it with result from above step` and final result is produced for given filter condition. And at the end it will store query and result in cache.
+But here, SmartFilter will `apply its own logic` to find its result. By comparing Step 3 and current filter conditions, it will identify that there is a `scope of improving filter condition`. Instead of fetching all records where *Qtr is either Q1 or Q2*, it should just fetch records where *Qtr is Q2* and `use existing cached result for Qtr = Q1 from above step`. So final query would be *"select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type".* Once result is available, `it will merge it with result from above step` and final result is produced for given filter condition. And at the end it will store query and result in cache.
 
 ###### Apply Filter Qtr = 'Q2'
 
 Again here in traditional approach you will fire query like *"select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"*
 
-guess what, smartfilter has already cached this query's and its output in Step 4. So `result is returned directly from cache without even touching database`.
+guess what, SmartFilter has already cached this query's and its output in Step 4. So `result is returned directly from cache without even touching database`.
 
 
 ## API Reference
@@ -64,11 +64,11 @@ var mysmartfilter = new smartfilter();
 
 ```
 
-You can create new object of smartfilter number of times. Each object will store database configuration, dimensions, filters and previous results in memory seperatly.
+You can create new object of SmartFilter number of times. Each object will store database configuration, dimensions, filters and previous results in memory seperatly.
 
 ## How To?
 
-smartfilter is build on message passing mechanism. This means whatever you want to do you only need to call single service 'smartfilterRequest'. This service will accept 'options' as first parameter and 'callback_method' as second parameter. It will identify what to do from 'options' which you have provided and once it is done, it will call 'callback_method' which will have output.
+SmartFilter is build on message passing mechanism. This means whatever you want to do you only need to call single service 'smartfilterRequest'. This service will accept 'options' as first parameter and 'callback_method' as second parameter. It will identify what to do from 'options' which you have provided and once it is done, it will call 'callback_method' which will have output.
 
 ```js
 
@@ -236,7 +236,7 @@ mysmartfilter.smartfilterRequest({
 
 #### Fully working sample
 
-Below sample would also show difference in approach between traditional way and smartfilter's way to interact with database in inline comment.
+Below sample would also show difference in approach between traditional way and SmartFilter's way to interact with database in inline comment.
 
 ```js
 var smartfilter = new require('smartfilter');
@@ -251,8 +251,8 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
     if (output.type !== 'error') {
         /*
         Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
-        Both traditional and smartfilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
-        But smartfilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
+        Both traditional and SmartFilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
+        But SmartFilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
         */
         mysmartfilter.smartfilterRequest({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
             if (output.type !== 'error') {
@@ -266,7 +266,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
                         /*
                         Step 4. Apply Filter Qtr in ['Q1', 'Q2']
                         In Traditional Case it will fire new query like "select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"
-                        But here, smartfilter will apply its own logic to find its result. 
+                        But here, SmartFilter will apply its own logic to find its result. 
                         By comparing Step 3 and current filter conditions, it will identify that there is a scope of improving filter condition. 
                         Instead of fetching all records where Qtr is either Q1 or Q2, it should just fetch records where Qtr is Q2 and use existing cached result for Qtr = Q1 from Step 3.
                         So final query would be "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
@@ -278,7 +278,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
                                 /*
                                 Step 5. Apply Filter Qtr = 'Q2'
                                 Again here in traditional approach you will fire query like "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
-                                guess what, smartfilter has already cached this query's and its output in Step 4.
+                                guess what, SmartFilter has already cached this query's and its output in Step 4.
                                 So result is returned directly from cache without even touching database.
                                 */
                                 mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
