@@ -24,7 +24,7 @@ AxiomCrossFilterClient = {
         self.crossFilter_socket.on('count', function (data) {
             document.querySelector('#countOfRecords #chart').innerHTML = self.numberWithCommas(data[0].totalCount);
             document.querySelector('#countOfRecords').style.display = "block";
-            self.hideMessage();
+            //self.hideMessage();
         });
         self.crossFilter_socket.on('connectSuccess', function (data) {
             document.querySelector('#statusMessage').innerText = JSON.stringify(data);
@@ -34,10 +34,10 @@ AxiomCrossFilterClient = {
             var keys = Object.keys(data);
             for (var i = 0; i < keys.length; i++) {
                 self.dimension[keys[i].toLowerCase()].data = data[keys[i]];
-                var iDiv = document.querySelector('#crossFilterContainer #' + keys[i].toLowerCase());
+                var iDiv = document.querySelector('#crossFilterContainer #' + (keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase()));
                 if (iDiv === null) {
                     iDiv = document.createElement('div');
-                    iDiv.id = keys[i].toLowerCase();
+                    iDiv.id = (keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase());
                     document.querySelector('#crossFilterContainer').appendChild(iDiv);
                 }
                 iDiv.style.border = '5px solid #EEE';
@@ -45,7 +45,7 @@ AxiomCrossFilterClient = {
                 iDiv.style.float = 'left';
                 iDiv.style.fontSize = "14px";
                 iDiv.style.background = "#FFF";
-                iDiv.innerHTML = '<div style="font-size: 14px; margin-bottom: 5px; background: #EEE; text-align: center; font-weight: bold; padding: 3px;">' + keys[i] + '<span class="reset" id="' + keys[i] + '" style="float:right; margin-left:10px;" onclick="AxiomCrossFilterClient.reset(this)">Reset</span></div>';
+                iDiv.innerHTML = '<div style="font-size: 14px; margin-bottom: 5px; background: #EEE; text-align: center; font-weight: bold; padding: 3px;">' + keys[i] + '<span class="reset" id="' + (keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase()) + '" style="float:right; margin-left:10px;" onclick="AxiomCrossFilterClient.reset(this)">Reset</span></div>';
 
                 //iDiv.innerText =  JSON.stringify(data[keys[i]], null, 4);
                 if (self.dimension[keys[i].toLowerCase()].chartType === "pie") {
@@ -71,19 +71,35 @@ AxiomCrossFilterClient = {
                     childElement.style.margin = "5px";
                     iDiv.appendChild(childElement);
                     stringArr.push('<table id="chart">');
-                    for (var j = 0; j < data[keys[i]].length; j++) {
-                        var myIndex = self.dimension[keys[i].toLowerCase()].filters.indexOf(data[keys[i]][j][keys[i]].toString());
-                        if (myIndex !== -1 || self.dimension[keys[i].toLowerCase()].filters.length === 0) {
-                            stringArr.push('<tr onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+
+                    for (var j = -1; j < data[keys[i]].length; j++) {
+                        if(j==-1){
+                            stringArr.push('<tr>');
                         }
-                        else {
-                            stringArr.push('<tr style="color:#CCC" onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+                        else{
+                            var myIndex = self.dimension[keys[i].toLowerCase()].filters.indexOf((data[keys[i]][j][keys[i]] == null ? "" : data[keys[i]][j][keys[i]]).toString());
+                            if (myIndex !== -1 || self.dimension[keys[i].toLowerCase()].filters.length === 0) {
+                                stringArr.push('<tr onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+                            }
+                            else {
+                                stringArr.push('<tr style="color:#CCC" onclick="AxiomCrossFilterClient.filterSingleValue(\'' + keys[i] + '\',\'' + data[keys[i]][j][keys[i]] + '\')">');
+                            }
                         }
                         stringArr.push('<td>');
-                        stringArr.push(data[keys[i]][j][keys[i]]);
+                        if(j==-1){
+                            stringArr.push(keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase());
+                        }
+                        else{
+                            stringArr.push(data[keys[i]][j][keys[i]]);
+                        }
                         stringArr.push('</td>');
                         stringArr.push('<td>');
-                        stringArr.push(self.numberWithCommas(data[keys[i]][j][self.dimension[keys[i].toLowerCase()].measure.name]));
+                        if(j==-1){
+                            stringArr.push(self.dimension[keys[i].toLowerCase()].measure.name);
+                        }
+                        else{
+                            stringArr.push(self.numberWithCommas(data[keys[i]][j][self.dimension[keys[i].toLowerCase()].measure.name]));
+                        }
                         stringArr.push('</td>');
                         stringArr.push('</tr>');
                     }
@@ -91,15 +107,16 @@ AxiomCrossFilterClient = {
                     childElement.innerHTML = stringArr.join("\n");
                 }
                 if (self.dimension[keys[i].toLowerCase()].filters.length === 0) {
-                    document.querySelector('.reset#' + keys[i]).style.display = "none";
+                    document.querySelector('.reset#' + (keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase())).style.display = "none";
                 }
                 else {
-                    document.querySelector('.reset#' + keys[i]).style.display = "block";
+                    document.querySelector('.reset#' + (keys[i].toLowerCase() === "" ? "noneID" : keys[i].toLowerCase())).style.display = "block";
                 }
             }
             data = null;
 
-            self.fetchCount();
+            //self.fetchCount();
+            self.hideMessage();
             document.querySelector('#statusMessage').innerText = 'Success!!!';
 
         });
@@ -122,7 +139,7 @@ AxiomCrossFilterClient = {
         var xDomain = d3.extent(data.map(function (d) { return d[key]; }));
         var yDomain = [0, d3.max(data.map(function (d) { return d[measure]; }))];
 
-        d3.select('#crossFilterContainer #' + key.toLowerCase() + ' #chart').style('width', w + 'px').style('height', h + 'px');
+        d3.select('#crossFilterContainer #' + (key.toLowerCase() === "" ? "noneID" : key.toLowerCase()) + ' #chart').style('width', w + 'px').style('height', h + 'px');
         var margin = { top: 10, right: 10, bottom: 100, left: 60 },
             margin2 = { top: 230, right: 10, bottom: 20, left: 60 },
             width = w - margin.left - margin.right,
@@ -266,7 +283,7 @@ AxiomCrossFilterClient = {
         var h = 200;
         var r = h / 2;
         var color = d3.scale.category20c();
-        d3.select('#crossFilterContainer #' + key.toLowerCase() + ' #chart').style('width', w + 'px').style('height', h + 'px');
+        d3.select('#crossFilterContainer #' + (key.toLowerCase() === "" ? "noneID" : key.toLowerCase()) + ' #chart').style('width', w + 'px').style('height', h + 'px');
         var vis = d3.select('#crossFilterContainer #' + key.toLowerCase() + ' #chart').append("svg:svg").data([data]).attr("width", w).attr("height", h).append("svg:g").attr("transform", "translate(" + r + "," + r + ")");
         var pie = d3.layout.pie().value(function (d) { return d[measure]; });
 
@@ -309,6 +326,9 @@ AxiomCrossFilterClient = {
         })
         .attr("fill", "#fff");
     },
+    createBarChart: function(){
+        
+    },
     connect: function () {
         "use strict";
         var self = this;
@@ -347,7 +367,7 @@ AxiomCrossFilterClient = {
         var self = this;
         var fieldName = document.querySelector("#selectDimension #dimension").value;
         fieldName = fieldName.trim();
-        if (fieldName === "") {
+        if (false && fieldName === "") {
             alert("Dimension can not be blank");
         }
         else {
@@ -368,7 +388,8 @@ AxiomCrossFilterClient = {
                 measure.aggregation = document.querySelectorAll("#measureType option")[document.querySelector("#measureType").selectedIndex].value.toLowerCase();
                 measure.name = measure.aggregation + '(' + measure.key + ')';
                 self.showMessage("Adding Dimension");
-                self.crossFilter_socket.emit('dimension', { field: fieldName, key: measure.key, aggregation: measure.aggregation });
+                //self.crossFilter_socket.emit('dimension', { field: fieldName, key: measure.key, aggregation: measure.aggregation });
+                self.crossFilter_socket.emit('pivot', { reference: fieldName, dimensions:[fieldName], measures:[{key: measure.key, aggregation: measure.aggregation}]});
             }
             else {
                 if (measureName === "") {
@@ -382,7 +403,8 @@ AxiomCrossFilterClient = {
                     measure.aggregation = document.querySelectorAll("#measureType option")[document.querySelector("#measureType").selectedIndex].value.toLowerCase();
                     measure.name = measure.aggregation + '(' + measure.key + ')';
                     self.showMessage("Adding Dimension");
-                    self.crossFilter_socket.emit('dimension', { field: fieldName, key: measure.key, aggregation: measure.aggregation });
+                    //self.crossFilter_socket.emit('dimension', { field: fieldName, key: measure.key, aggregation: measure.aggregation });
+                    self.crossFilter_socket.emit('pivot', { reference: fieldName, dimensions:[fieldName], measures:[{key: measure.key, aggregation: measure.aggregation}]});
                 }
             }
         }
@@ -397,6 +419,7 @@ AxiomCrossFilterClient = {
         var self = this;
         self.showMessage("Applying Filter");
         self.crossFilter_socket.emit('filter', { field: key, filters: self.dimension[key.toLowerCase()].filters, filterType: self.dimension[key.toLowerCase()].filterType });
+        self.fetchCount();
     },
     measureTypeChanged: function () {
         "use strict";
@@ -440,7 +463,7 @@ AxiomCrossFilterClient = {
     fetchCount: function () {
         "use strict";
         var self = this;
-        self.showMessage("Fetching Count");
+        //self.showMessage("Fetching Count");
         self.crossFilter_socket.emit('count', {});
     },
     showMessage: function (msg) {
@@ -490,5 +513,6 @@ AxiomCrossFilterClient = {
         self.dimension[key.toLowerCase()].filterType = 'range';
         self.dimension[key.toLowerCase()].filters = values;
         self.updateFilter(key);
-    }
+    },
+    
 }
