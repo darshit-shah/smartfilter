@@ -134,22 +134,29 @@ Here is a sample code to create a pivot on 'Type' as Dimension and 'Sum' of 'Vol
 ```js
 
 mysmartfilter.smartfilterRequest({ 
-  type: 'dimension', 
+  type: 'pivot', 
   data: { 
-    field: 'Type', //Column name of Dimension field
-    key: 'Volume', //Column name of Measure field
-    aggregation: 'sum'//type of aggregation which needs to be applied on measure
-    } 
-  }, function (output) {
-    if (output.type !== 'error') {
-      //In this case operation is completed successsfully.
-      console.log('Success', output);
-    }
-    else {
-      //In this case some error has occured.
-      console.log('Fail', output);
-    }
-  });
+    reference: 'myPivot',
+    dimensions: [//Multiple dimensions can be specified
+      'Type'//Column name of Dimension field
+    ],
+    measures: [//Multiple measures can be specified
+      {
+        key: 'Volume', //Column name of Measure field
+        aggregation: 'sum'//type of aggregation which needs to be applied on measure
+      }
+    ]
+  } 
+}, function (output) {
+  if (output.type !== 'error') {
+    //In this case operation is completed successsfully.
+    console.log('Success', output);
+  }
+  else {
+    //In this case some error has occured.
+    console.log('Fail', output);
+  }
+});
 
 ```
 
@@ -212,28 +219,6 @@ mysmartfilter.smartfilterRequest({
 
 
 
-#### Fetch Count
-
-Now if you just want count of raw records from base table after applying all filter conditions, you can use below code.
-
-```js
-
-mysmartfilter.smartfilterRequest({ 
-  type: 'count', //fetch count
-  data: {  }
-  }, function (output) {
-    if (output.type !== 'error') {
-      //In this case operation is completed successsfully.
-      console.log('Success', output);
-    }
-    else {
-      //In this case some error has occured.
-      console.log('Fail', output);
-    }
-  });
-  
-```
-
 #### Fully working sample
 
 Below sample would also show difference in approach between traditional way and SmartFilter's way to interact with database in inline comment.
@@ -254,7 +239,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
         Both traditional and SmartFilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
         But SmartFilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
         */
-        mysmartfilter.smartfilterRequest({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
+        mysmartfilter.smartfilterRequest({ type: "pivot", data: { reference:'myPivot', dimensions:['Type'], measures:[{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
             if (output.type !== 'error') {
                 /*
                 Step 3. Apply Filter Qtr = 'Q1'
