@@ -11,7 +11,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
         Both traditional and node-cross-filter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
         But node-cross-filter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
         */
-        mysmartfilter.smartfilterRequest({ type: "dimension", data: { field: 'Type', key: 'volume', aggregation: 'sum'} }, function (output) {
+        mysmartfilter.smartfilterRequest({ type: "pivot", data: { reference: 'myPivot', dimensions: ['type'], measures: [{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
             if (output.type !== 'error') {
                 /*
                 Step 3. Apply Filter Qtr = 'Q1'
@@ -42,12 +42,27 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
                                     if (output.type !== 'error') {
                                         console.log("Result:", output.data, '\n\n');
                                     }
+                                    else {
+                                        console.log("Error:", output, '\n\n');
+                                    }
                                 });
+                            }
+                            else {
+                                console.log("Error:", output, '\n\n');
                             }
                         });
                     }
+                    else {
+                        console.log("Error:", output, '\n\n');
+                    }
                 });
             }
+            else {
+                console.log("Error:", output, '\n\n');
+            }
         });
+    }
+    else {
+        console.log("Error:", output, '\n\n');
     }
 });

@@ -51,9 +51,9 @@ function connectSocket() {
                     socket.emit('errorMessage', 'Setup is one time excercise');
                 }
             });
-            socket.on('dimension', function (data) {
+            socket.on('pivot', function (data) {
                 if (socket.mySmartfilter)
-                    socket.mySmartfilter.send({ type: "dimension", data: data });
+                    socket.mySmartfilter.send({ type: "pivot", data: data });
             });
             socket.on('filter', function (data) {
                 if (socket.mySmartfilter)
@@ -67,9 +67,9 @@ function connectSocket() {
                 if (socket.mySmartfilter)
                     socket.mySmartfilter.send({ type: "data", data: data });
             });
-            socket.on('count', function (data) {
-                if (socket.mySmartfilter)
-                    socket.mySmartfilter.send({ type: "count", data: data });
-            });
+//            socket.on('count', function (data) {
+//                if (socket.mySmartfilter)
+//                    socket.mySmartfilter.send({ type: "count", data: data });
+//            });
         });
 }
