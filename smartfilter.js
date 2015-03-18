@@ -1,6 +1,6 @@
 ﻿"use strict";
 function smartfilter() {
-    var debug = true;
+    var debug = false;
 
     var tableName = "";
     //var staticFilters = {};
@@ -95,7 +95,7 @@ function smartfilter() {
             console.log('executePivots', dimension);
         getAllPivotResults(0, addReduceNone, dimension, function (data) {
             if (debug)
-                console.log('executePivots', dimension, data);
+                console.log('executePivots', dimension, Object.keys(data));
             cb(data);
             data = null;
         });
@@ -140,7 +140,7 @@ function smartfilter() {
 
             createToExternalDatabasePivot(query, function (data, isCachedResult) {
                 if (debug) {
-                    console.log('Result Returned for dimensions \'' + pivotMap[i].dimensions + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db'));
+                    console.log(data.length + ' rows Returned for dimensions \'' + pivotMap[i].dimensions + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db') + '. addReduceNone: ' + addReduceNone);
                 }
 
 
@@ -208,6 +208,8 @@ function smartfilter() {
             });
         }
         else {
+            //            if (pivotListResult.finalPivot != undefined)
+            //                console.log(pivotListResult.finalPivot.length);
             cb(pivotListResult);
         }
     }
@@ -238,25 +240,15 @@ function smartfilter() {
     }
 
     function createToExternalDatabasePivot(query, cb) {
-        for (var i = 0; i < oldResults.length; i++) {
-            if (oldResults[i].query === JSON.stringify(query)) {
-                cb(oldResults[i].result, true);
-                return;
-            }
-        }
-
-        queryExecutor(query, function (err, rows, fields) {
-            if (err) {
-                console.log(['error', err]);
-                cReq.cb({ type: 'error', data: err });
-                return;
-            }
-            else {
-                oldResults.push({ query: JSON.stringify(query), result: rows });
-                rows = null;
-                cb(oldResults[oldResults.length - 1].result, false);
-            }
-        });
+        //        for (var i = 0; i < oldResults.length; i++) {
+        //            if (oldResults[i].query === JSON.stringify(query)) {
+        //                if (debug)
+        //                    console.log(oldResults[i].query);
+        //                cb(oldResults[i].result, true);
+        //                return;
+        //            }
+        //        }
+        queryExecutor(query, cb);
     }
 
     /******************************************************************************************************************************************************************/
@@ -278,30 +270,82 @@ function smartfilter() {
                 if (existingCondition.length === 2 && existingCondition[0] === values[0]) {
                     // added
                     if (existingCondition[1] <= values[1]) {
-                        addReduceNone = 1;
-                        newCondition[0] = existingCondition[1];
-                        newCondition[1] = values[1];
+                        if (isFinite(+existingCondition[1])) {
+                            newCondition[0] = existingCondition[1] + 1;
+                            newCondition[1] = values[1];
+                            addReduceNone = 1;
+                        }
+                        else if ((new Date(existingCondition[1])).getTime() != 0) {
+                            var dt = new Date(existingCondition[1]);
+                            dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                            dt.setSeconds(dt.getSeconds() + 1);
+                            newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                            newCondition[1] = values[1];
+                            addReduceNone = 1;
+                        }
+                        else {
+                            //nothing
+                        }
                     }
                     //reduced
                     else {
-                        addReduceNone = 2;
-                        newCondition[0] = values[1];
-                        newCondition[1] = existingCondition[1];
+                        if (isFinite(+existingCondition[1])) {
+                            newCondition[1] = existingCondition[1] - 1;
+                            newCondition[0] = values[1];
+                            addReduceNone = 2;
+                        }
+                        else if ((new Date(existingCondition[1])).getTime() != 0) {
+                            var dt = new Date(existingCondition[1]);
+                            dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                            dt.setSeconds(dt.getSeconds() - 1);
+                            newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                            newCondition[0] = values[0];
+                            addReduceNone = 2;
+                        }
+                        else {
+                            //nothing
+                        }
                     }
                 }
                 //right is same
                 else if (existingCondition.length === 2 && existingCondition[1] === values[1]) {
                     // added
                     if (values[0] <= existingCondition[0]) {
-                        addReduceNone = 1;
-                        newCondition[0] = values[0];
-                        newCondition[1] = existingCondition[0];
+                        if (isFinite(+existingCondition[0])) {
+                            newCondition[1] = existingCondition[0] - 1;
+                            newCondition[0] = values[0];
+                            addReduceNone = 1;
+                        }
+                        else if ((new Date(existingCondition[0])).getTime() != 0) {
+                            var dt = new Date(existingCondition[0]);
+                            dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                            dt.setSeconds(dt.getSeconds() - 1);
+                            newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                            newCondition[0] = values[0];
+                            addReduceNone = 1;
+                        }
+                        else {
+                            //nothing
+                        }
                     }
                     //reduced
                     else {
-                        addReduceNone = 2;
-                        newCondition[0] = existingCondition[0];
-                        newCondition[1] = values[0];
+                        if (isFinite(+existingCondition[0])) {
+                            newCondition[0] = existingCondition[0] + 1;
+                            newCondition[1] = values[1];
+                            addReduceNone = 2;
+                        }
+                        else if ((new Date(existingCondition[0])).getTime() != 0) {
+                            var dt = new Date(existingCondition[0]);
+                            dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                            dt.setSeconds(dt.getSeconds() + 1);
+                            newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                            newCondition[1] = values[1];
+                            addReduceNone = 2;
+                        }
+                        else {
+                            //nothing
+                        }
                     }
                 }
                 //nothing is same
@@ -387,13 +431,13 @@ function smartfilter() {
                 }
             }
         }
-
-        filteredDimension[dimension].filters = newCondition;
         if (debug) {
+            console.log('old filter:', filteredDimension[dimension].filters);
             console.log('original filter: ', values);
             console.log('changed  filter: ', newCondition);
             console.log('merge type: ', (addReduceNone === 0 ? 'replace' : (addReduceNone === 1 ? 'Add' : 'Reduce')));
         }
+        filteredDimension[dimension].filters = newCondition;
         //    if (debug)
         //        console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
         executePivots(addReduceNone, dimension, function (data) {
@@ -587,8 +631,16 @@ function smartfilter() {
         var queryString = objConnection.prepareQuery(query);
         if (debug)
             console.log('queryString:\n', queryString);
+
+        for (var i = 0; i < oldResults.length; i++) {
+            if (oldResults[i].query === queryString) {
+                cb(JSON.parse(JSON.stringify(oldResults[i].result)), true);
+                return;
+            }
+        }
         cConn.query(queryString, function (err, rows, fields) {
-            cb(err, rows, fields);
+            oldResults.push({ query: queryString, result: JSON.parse(JSON.stringify(rows)) });
+            cb(rows, false);
             err = null;
             rows = null;
             fields = null;
