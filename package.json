@@ -1,7 +1,7 @@
 {
   "name": "smartfilter",
   "license": "Apache License 2.0",
-  "main": "Smartfilter.js",
+  "main": "smartfilter.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/darshit-shah/Smartfilter.git"
@@ -26,5 +26,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "description": "This is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.",
-  "version": "0.0.6"
+  "version": "0.0.7"
 }
