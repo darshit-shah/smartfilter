@@ -20,6 +20,20 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "i_finalt
             }
         }, function (output) {
             if (output.type !== 'error') {
+                console.log(JSON.stringify(output));
+
+                mysmartfilter.smartfilterRequest({ type: "removePivot",
+                    data: {
+                        reference: 'Pivot1'
+                    }
+                }, function (output) {
+                    if (output.type !== 'error') {
+                        console.log(JSON.stringify(output));
+                        process.exit(0);
+                    }
+                });
+
+                return;
                 mysmartfilter.smartfilterRequest({
                     type: "pivot",
                     data: {
@@ -107,6 +121,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "i_finalt
                         //                                                                        mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'modeoftransport', filters: ['0004'], filterType: 'in'} }, function (output) {
                         //                                                                            if (output.type !== 'error') {
                         console.log("Result:", JSON.stringify(output), '\n\n');
+                        process.exit(0);
                         //                                                                            }
                         //                                                                        });
                         //                                                                    }
