@@ -19,6 +19,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "i_finalt
                 ]
             }
         }, function (output) {
+            console.log(output);
             if (output.type !== 'error') {
                 console.log(JSON.stringify(output));
 

@@ -89,16 +89,30 @@ function smartfilter() {
         var filterCondition = createPivotWhereCondition(index);
         if (oldFilterConditions.indexOf(JSON.stringify(filterCondition)) == -1)
             oldFilterConditions.push(JSON.stringify(filterCondition));
-        var i = index;
-        var startTime = new Date().getTime();
+        //var i = index;
+        //var startTime = new Date().getTime();
         if (debug)
             console.log('Querying for for dimension \'' + pivotMap[index].dimensions + '\'');
         var query = {};
         query.table = tableName;
         query.select = [];
         for (var n = 0; n < pivotMap[index].dimensions.length; n++) {
-            if (pivotMap[index].dimensions[n] !== "")
-                query.select.push({ field: pivotMap[index].dimensions[n], alias: pivotMap[index].dimensions[n] });
+            if (typeof pivotMap[index].dimensions[n] === "string") {
+                if (pivotMap[index].dimensions[n] !== "") {
+                    query.select.push({ field: pivotMap[index].dimensions[n], alias: pivotMap[index].dimensions[n] });
+                }
+            }
+            else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
+                var caseStatement = { field: pivotMap[index].dimensions[n].values[0].key, expression: { cases: [], 'default': { value: 'unknown'}} };
+                if (pivotMap[index].dimensions[n].alias != null)
+                    caseStatement.alias = pivotMap[index].dimensions[n].alias;
+                if (pivotMap[index].dimensions[n]['default'] != null)
+                    caseStatement.expression['default'].value = '"' + pivotMap[index].dimensions[n]['default'] + '"';
+                for (var i = 0; i < pivotMap[index].dimensions[n].values.length; i++) {
+                    caseStatement.expression.cases.push({ operator: pivotMap[index].dimensions[n].values[i].type, value: pivotMap[index].dimensions[n].values[i].value, out: { value: '"' + pivotMap[index].dimensions[n].values[i].display + '"'} });
+                }
+                query.select.push(caseStatement);
+            }
         }
         var measures = pivotMap[index].measures;
         for (var j = 0; j < measures.length; j++) {
@@ -111,8 +125,30 @@ function smartfilter() {
         }
         query.groupby = [];
         for (var n = 0; n < pivotMap[index].dimensions.length; n++) {
-            if (pivotMap[index].dimensions[n] !== "") {
-                query.groupby.push(pivotMap[index].dimensions[n]);
+            if (typeof pivotMap[index].dimensions[n] === "string") {
+                if (pivotMap[index].dimensions[n] !== "") {
+                    query.groupby.push({ field: pivotMap[index].dimensions[n] });
+                }
+            }
+            else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
+                var caseStatement = { field: pivotMap[index].dimensions[n].values[0].key, expression: { cases: [], 'default': { value: 'unknown'}} };
+                if (pivotMap[index].dimensions[n]['default'] != null)
+                    caseStatement.expression['default'].value = '"' + pivotMap[index].dimensions[n]['default'] + '"';
+                for (var i = 0; i < pivotMap[index].dimensions[n].values.length; i++) {
+                    caseStatement.expression.cases.push({ operator: pivotMap[index].dimensions[n].values[i].type, value: pivotMap[index].dimensions[n].values[i].value, out: { value: '"' + pivotMap[index].dimensions[n].values[i].display + '"'} });
+                }
+                query.groupby.push(caseStatement);
+            }
+        }
+        query.sortby = [];
+        for (var n = 0; n < pivotMap[index].dimensions.length; n++) {
+            if (typeof pivotMap[index].dimensions[n] === "string") {
+                if (pivotMap[index].dimensions[n] !== "") {
+                    query.sortby.push({ field: pivotMap[index].dimensions[n], order: 'asc' });
+                }
+            }
+            else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
+                query.sortby.push({ field: pivotMap[index].dimensions[n].alias, order: 'asc' });
             }
         }
         if (filterCondition !== undefined) {
