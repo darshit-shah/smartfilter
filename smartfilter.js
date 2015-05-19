@@ -46,7 +46,7 @@ function smartfilter() {
             query.limit = from + "," + to;
         }
 
-        createToExternalDatabase('', query, function (data, isCachedResult) {
+        createToExternalDatabasePivot(query, function (data, isCachedResult) {
             cb(data);
             data = null;
         });
@@ -250,7 +250,7 @@ function smartfilter() {
         var filtersTobeApplied = [].concat(staticFilters);
         for (var i = 0; i < filterList.length; i++) {
             if (filteredDimension[filterList[i]] != null && filteredDimension[filterList[i]].filters != null && filteredDimension[filterList[i]].filters.length > 0
-                    && (pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === filterList[i]) == false) {
+                    && (index == -1 || (pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === filterList[i]) == false)) {
                 filtersTobeApplied.push({ filterType: filteredDimension[filterList[i]].filterType, field: filterList[i], filters: filteredDimension[filterList[i]].filters });
             }
         }
