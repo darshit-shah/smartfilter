@@ -21,7 +21,6 @@ function smartfilter() {
 
     var pivotMap = [];
 
-
     function getData(from, to, cb) {
 
         if (typeof from === 'function') {
@@ -583,11 +582,35 @@ function smartfilter() {
                 });
             }
             else if (cReq.type.toLowerCase() === "data") {
-                getData(cReq.data.from, cReq.data.to, function (data) {
-                    cReq.cb({ type: 'records', data: data });
-                    processRequestRunning = false;
-                    processRequestStack();
-                });
+                var from, to;
+                if (cReq.data == undefined) {
+                    getData(function (data) {
+                        cReq.cb({ type: 'records', data: data });
+                        processRequestRunning = false;
+                        processRequestStack();
+                    });
+                }
+                else if (cReq.data.from == undefined) {
+                    getData(function (data) {
+                        cReq.cb({ type: 'records', data: data });
+                        processRequestRunning = false;
+                        processRequestStack();
+                    });
+                }
+                else if (cReq.data.to == undefined) {
+                    getData(cReq.data.from, function (data) {
+                        cReq.cb({ type: 'records', data: data });
+                        processRequestRunning = false;
+                        processRequestStack();
+                    });
+                }
+                else {
+                    getData(from, to, function (data) {
+                        cReq.cb({ type: 'records', data: data });
+                        processRequestRunning = false;
+                        processRequestStack();
+                    });
+                }
             }
             else if (cReq.type.toLowerCase() === "count") {
                 getCount(function (data) {
