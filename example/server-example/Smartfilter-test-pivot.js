@@ -1,7 +1,7 @@
 //create new instance of node-cross-filter
 var smartfilter = new require('smartfilter');
 //database connection setting.
-var dbConfig = { type: "database", databaseType: 'mysql', database: 'axiomacc', host: "192.168.0.116", port: "3306", user: "usr", password: "usr", multipleStatements: false };
+var dbConfig = { type: "database", databaseType: 'mysql', database: 'axiomacc', host: "192.168.0.117", port: "3306", user: "usr", password: "usr", multipleStatements: false };
 var mysmartfilter = new smartfilter();
 //Step 1. Connect to mysql database
 mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "i_finaltdcdata", dbConfig: dbConfig} }, function (output) {
@@ -12,9 +12,19 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "i_finalt
                 dimensions: ["MfgPlantRg"],
                 measures: [
                     {
-                        key: 'MfgPlantRg',
-                        aggregation: 'count',
-                        alias: 'count'
+                        key: 'DistanceVol',
+                        aggregation: 'sum',
+                        alias: 'sum_distanceVol'
+                    },
+                    {
+                        key: 'sum(Distance*UpdatedVolumn)/sum(UpdatedVolumn)',
+                        alias: 'Lead',
+                        encloseField: false
+                    },
+                    {
+                        key: 'UpdatedVOlumn',
+                        aggregation: 'sum',
+                        alias: 'sum_vol'
                     }
                 ]
             }

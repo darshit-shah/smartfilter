@@ -118,7 +118,7 @@ function smartfilter() {
             if (measures[j].alias === undefined)
                 measures[j].alias = measures[j].aggregation + '(' + measures[j].key + ')';
             if (measures[j].key !== "")
-                query.select.push({ field: measures[j].key, aggregation: measures[j].aggregation, alias: measures[j].alias });
+                query.select.push({ field: measures[j].key, aggregation: measures[j].aggregation, alias: measures[j].alias, encloseField: measures[j].encloseField });
             else
                 query.select.push({ field: 'pk_ID', aggregation: measures[j].aggregation, alias: measures[j].alias });
         }
