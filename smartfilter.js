@@ -605,7 +605,7 @@ function smartfilter() {
                     });
                 }
                 else {
-                    getData(from, to, function (data) {
+                    getData(cReq.data.from, cReq.data.to, function (data) {
                         cReq.cb({ type: 'records', data: data });
                         processRequestRunning = false;
                         processRequestStack();
