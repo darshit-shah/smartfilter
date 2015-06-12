@@ -249,7 +249,7 @@ function smartfilter() {
         var filtersTobeApplied = [].concat(staticFilters);
         for (var i = 0; i < filterList.length; i++) {
             if (filteredDimension[filterList[i]] != null && filteredDimension[filterList[i]].filters != null && filteredDimension[filterList[i]].filters.length > 0
-                    && (index == -1 || (pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === filterList[i]) == false)) {
+                    && (index == -1 || (pivotMap[index] && pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === filterList[i]) == false)) {
                 filtersTobeApplied.push({ filterType: filteredDimension[filterList[i]].filterType, field: filterList[i], filters: filteredDimension[filterList[i]].filters });
             }
         }
@@ -261,6 +261,28 @@ function smartfilter() {
                 else if (filtersTobeApplied[i].filterType === 'range') {
                     filterCondition.and.push({ field: filtersTobeApplied[i].field, operator: 'gteq', value: filtersTobeApplied[i].filters[0] });
                     filterCondition.and.push({ field: filtersTobeApplied[i].field, operator: 'lteq', value: filtersTobeApplied[i].filters[1] });
+                }
+                else if (filtersTobeApplied[i].filterType === 'withinAll') {
+                    for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
+                        var filterJSON = [];
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'eq', value: filtersTobeApplied[i].filters[j] });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: filtersTobeApplied[i].filters[j] + ',%' });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: '%, ' + filtersTobeApplied[i].filters[j] });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: '%, ' + filtersTobeApplied[i].filters[j] + ',%' });
+                        filterCondition.and.push(JSON.parse(JSON.stringify({ or: filterJSON })));
+                        filterJSON = null;
+                    }
+                }
+                else if (filtersTobeApplied[i].filterType === 'withinAny') {
+                    filterCondition.and.push({ or: [] });
+                    for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
+                        var filterJSON = [];
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'eq', value: filtersTobeApplied[i].filters[i] });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: filtersTobeApplied[i].filters[j] + ',%' });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: '%, ' + filtersTobeApplied[i].filters[j] });
+                        filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'match', value: '%, ' + filtersTobeApplied[i].filters[j] + ',%' });
+                        filterCondition.and[filterCondition.and.length - 1].or.push({ or: filterJSON });
+                    }
                 }
             }
         }
@@ -523,7 +545,7 @@ function smartfilter() {
     function queryExecutor(query, cb) {
 
         if (debug)
-            console.log('query', query);
+            console.log('query', JSON.stringify(query));
         var queryString = objConnection.prepareQuery(query);
         if (debug)
             console.log('queryString:\n', queryString);
