@@ -496,6 +496,10 @@ function smartfilter() {
                     }
                 }
             }
+            else {
+                newCondition = values;
+                addReduceNone = 0;
+            }
             if (debug) {
                 console.log('old filter:', filteredDimension[dimension].filters);
                 console.log('original filter: ', values);
