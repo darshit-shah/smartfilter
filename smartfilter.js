@@ -51,15 +51,21 @@ function smartfilter() {
         });
     }
 
-    function pivot(reference, dimensions, measures, cb) {
+    function pivot(reference, dimensions, measures, allResults, cb) {
         deletePivot(reference);
         pivotMap.push({ reference: reference, dimensions: dimensions, measures: measures });
-        executePivots(0, null, cb);
+        if (allResults == true) {
+            executePivots(0, null, cb);
+        }
+        else {
+            executePivots(0, null, cb, reference);
+        }
     }
 
     function removePivot(reference, cb) {
         deletePivot(reference);
-        executePivots(0, null, cb);
+        //executePivots(0, null, cb);
+        cb("Pivot Removed");
     }
 
     function deletePivot(reference) {
@@ -73,10 +79,10 @@ function smartfilter() {
         }
     }
 
-    function executePivots(addReduceNone, dimension, cb) {
+    function executePivots(addReduceNone, dimension, cb, reference) {
         if (debug)
             console.log('executePivots', dimension);
-        getAllPivotResults(0, addReduceNone, dimension, function (data) {
+        getAllPivotResults(0, addReduceNone, dimension, reference, function (data) {
             if (debug)
                 console.log('executePivots', dimension, Object.keys(data));
             cb(data);
@@ -156,10 +162,15 @@ function smartfilter() {
         return { query: query, measures: measures };
     }
 
-    function getAllPivotResults(index, addReduceNone, dimension, cb) {
+    function getAllPivotResults(index, addReduceNone, dimension, reference, cb) {
         if (index < pivotMap.length) {
             if (pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === dimension) {
-                getAllPivotResults(index + 1, addReduceNone, dimension, cb);
+                getAllPivotResults(index + 1, addReduceNone, dimension, reference, cb);
+                return;
+            }
+
+            if (reference != undefined && reference != pivotMap[index].reference) {
+                getAllPivotResults(index + 1, addReduceNone, dimension, reference, cb);
                 return;
             }
 
@@ -234,12 +245,20 @@ function smartfilter() {
                     }
                 }
                 setTimeout(function () {
-                    getAllPivotResults(index + 1, addReduceNone, dimension, cb);
+                    getAllPivotResults(index + 1, addReduceNone, dimension, reference, cb);
                 }, 1);
             });
         }
         else {
-            cb(pivotListResult);
+            if (reference == undefined) {
+                cb(pivotListResult);
+            }
+            else {
+                var json = {};
+                json[reference] = pivotListResult[reference];
+                cb(json);
+                json = null;
+            }
         }
     }
 
@@ -666,7 +685,7 @@ function smartfilter() {
                     processRequestStack();
                 }
                 else {
-                    pivot(cReq.data.reference, cReq.data.dimensions, cReq.data.measures, function (data) {
+                    pivot(cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, function (data) {
                         cReq.cb({ type: 'data', data: data });
                         processRequestRunning = false;
                         processRequestStack();
