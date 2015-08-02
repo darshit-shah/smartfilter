@@ -7,6 +7,7 @@ function smartfilter() {
     var filteredDimension = {};
 
     var pivotListResult = {};
+    var pivotListFilters = {};
     var pivotListResultKey = {};
 
     var oldResults = {};
@@ -71,6 +72,7 @@ function smartfilter() {
     function deletePivot(reference) {
         delete pivotListResult[reference];
         delete pivotListResultKey[reference];
+        delete pivotListFilters[reference]
         for (var i = 0; i < pivotMap.length; i++) {
             if (pivotMap[i].reference == reference) {
                 pivotMap.splice(i, 1);
@@ -84,7 +86,7 @@ function smartfilter() {
             console.log('executePivots', dimension);
         getAllPivotResults(0, addReduceNone, dimension, reference, function (data) {
             if (debug)
-                console.log('executePivots', dimension, Object.keys(data));
+                console.log('executePivots', dimension, Object.keys(data.data));
             cb(data);
             data = null;
         });
@@ -197,6 +199,7 @@ function smartfilter() {
                         if (keyIndex === -1) {
                             pivotListResult[pivotMap[i].reference].push(data[j]);
                             pivotListResultKey[pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
+                            pivotListFilters[pivotMap[i].reference].push(query.filter);
                         }
                         else {
 
@@ -223,6 +226,7 @@ function smartfilter() {
                             if (pivotMap[i].dimensions.length === 1 && pivotMap[i].dimensions[0] === dimension) {
                                 pivotListResult[pivotMap[i].reference].splice(keyIndex, 1);
                                 pivotListResultKey[pivotMap[i].reference].splice(keyIndex, 1);
+                                pivotListFilters[pivotMap[i].reference].splice(keyIndex, 1);
                             }
                             else {
                                 for (var k = 0; k < measures.length; k++) {
@@ -235,6 +239,7 @@ function smartfilter() {
                 //replace entire result
                 else {
                     pivotListResult[pivotMap[i].reference] = data;
+                    pivotListFilters[pivotMap[i].reference] = query.filter;
                     pivotListResultKey[pivotMap[i].reference] = [];
                     for (var j = 0; j < data.length; j++) {
                         var pivotMapDimensionKey = [];
@@ -250,12 +255,19 @@ function smartfilter() {
             });
         }
         else {
+            var allFilters = [].concat(staticFilters);
+            var keys = Object.keys(filteredDimension);
+            for (var i = 0; i < keys.length; i++) {
+                allFilters.push(filteredDimension[keys[i]]);
+            }
             if (reference == undefined) {
-                cb(pivotListResult);
+                cb({ data: pivotListResult, filters: allFilters }); //, appliedFilters: pivotListFilters
             }
             else {
-                var json = {};
-                json[reference] = pivotListResult[reference];
+                var json = { data: {}, appliedFilters: {}, filters: [] };
+                json.data[reference] = pivotListResult[reference];
+                //json.appliedFilters[reference] = pivotListFilters[reference];
+                json.filters = allFilters;
                 cb(json);
                 json = null;
             }
@@ -329,6 +341,7 @@ function smartfilter() {
         values = values.sort();
         if (filteredDimension[dimension] === undefined) {
             filteredDimension[dimension] = {};
+            filteredDimension[dimension].field = dimension;
             filteredDimension[dimension].filters = [];
         }
         filteredDimension[dimension].filterType = filterType;
@@ -374,16 +387,16 @@ function smartfilter() {
                         //reduced
                         else {
                             if (isFinite(+existingCondition[1])) {
-                                newCondition[1] = existingCondition[1] - 1;
                                 newCondition[0] = values[1];
+                                newCondition[1] = existingCondition[1] - 1;
                                 addReduceNone = 2;
                             }
                             else if ((new Date(existingCondition[1])).getTime() != 0) {
+                                newCondition[0] = values[0];
                                 var dt = new Date(existingCondition[1]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                                 dt.setSeconds(dt.getSeconds() - 1);
                                 newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                newCondition[0] = values[0];
                                 addReduceNone = 2;
                             }
                             else {
@@ -396,16 +409,16 @@ function smartfilter() {
                         // added
                         if (values[0] <= existingCondition[0]) {
                             if (isFinite(+existingCondition[0])) {
-                                newCondition[1] = existingCondition[0] - 1;
                                 newCondition[0] = values[0];
+                                newCondition[1] = existingCondition[0] - 1;
                                 addReduceNone = 1;
                             }
                             else if ((new Date(existingCondition[0])).getTime() != 0) {
+                                newCondition[0] = values[0];
                                 var dt = new Date(existingCondition[0]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                                 dt.setSeconds(dt.getSeconds() - 1);
                                 newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                newCondition[0] = values[0];
                                 addReduceNone = 1;
                             }
                             else {
@@ -415,16 +428,16 @@ function smartfilter() {
                         //reduced
                         else {
                             if (isFinite(+existingCondition[0])) {
-                                newCondition[0] = existingCondition[0] + 1;
-                                newCondition[1] = values[1];
+                                newCondition[0] = existingCondition[0];
+                                newCondition[1] = values[0];
                                 addReduceNone = 2;
                             }
                             else if ((new Date(existingCondition[0])).getTime() != 0) {
                                 var dt = new Date(existingCondition[0]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getSeconds() + 1);
+                                dt.setSeconds(dt.getSeconds());
                                 newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                newCondition[1] = values[1];
+                                newCondition[1] = values[0];
                                 addReduceNone = 2;
                             }
                             else {
@@ -541,7 +554,7 @@ function smartfilter() {
         for (var i = 0; i < pivotMap.length; i++) {
             var query = prepareQueryJSON(i, dimension);
             var queryString = objConnection.prepareQuery(query);
-            oldResults[queryString] = { result: JSON.parse(JSON.stringify(data[pivotMap[i].reference])) };
+            oldResults[queryString] = { result: JSON.parse(JSON.stringify(data.data[pivotMap[i].reference])) };
         }
         cb(data);
         data = null;
@@ -614,14 +627,22 @@ function smartfilter() {
             }
             else if (cReq.type.toLowerCase() === "filter") {
                 filter(cReq.data.filterType, cReq.data.field, cReq.data.filters, function (data) {
-                    cReq.cb({ type: 'data', data: data });
+                    data.type = 'data';
+                    if (cReq.data.reference) {
+                        data.reference = cReq.data.reference;
+                    }
+                    cReq.cb(data);
                     processRequestRunning = false;
                     processRequestStack();
                 });
             }
             else if (cReq.type.toLowerCase() === "staticfilter") {
                 staticFilter(cReq.data, function (data) {
-                    cReq.cb({ type: 'data', data: data });
+                    data.type = 'data';
+                    if (cReq.data.reference) {
+                        data.reference = cReq.data.reference;
+                    }
+                    cReq.cb(data);
                     processRequestRunning = false;
                     processRequestStack();
                 });
@@ -686,7 +707,8 @@ function smartfilter() {
                 }
                 else {
                     pivot(cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, function (data) {
-                        cReq.cb({ type: 'data', data: data });
+                        data.type = 'data';
+                        cReq.cb(data);
                         processRequestRunning = false;
                         processRequestStack();
                     });
