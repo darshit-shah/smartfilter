@@ -368,14 +368,14 @@ function smartfilter() {
                         // added
                         if (existingCondition[1] <= values[1]) {
                             if (isFinite(+existingCondition[1])) {
-                                newCondition[0] = existingCondition[1] + 1;
+                                newCondition[0] = existingCondition[1] + 0.0000000001;
                                 newCondition[1] = values[1];
                                 addReduceNone = 1;
                             }
                             else if ((new Date(existingCondition[1])).getTime() != 0) {
                                 var dt = new Date(existingCondition[1]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getSeconds() + 1);
+                                dt.setSeconds(dt.getMilliseconds() + 1);
                                 newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
                                 newCondition[1] = values[1];
                                 addReduceNone = 1;
@@ -387,16 +387,16 @@ function smartfilter() {
                         //reduced
                         else {
                             if (isFinite(+existingCondition[1])) {
-                                newCondition[0] = values[1];
-                                newCondition[1] = existingCondition[1] - 1;
+                                newCondition[0] = values[1] + 0.0000000001;
+                                newCondition[1] = existingCondition[1];
                                 addReduceNone = 2;
                             }
                             else if ((new Date(existingCondition[1])).getTime() != 0) {
-                                newCondition[0] = values[0];
-                                var dt = new Date(existingCondition[1]);
+                                var dt = new Date(values[1]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getSeconds() - 1);
-                                newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                dt.setSeconds(dt.getMilliseconds + 1);
+                                newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                newCondition[1] = existingCondition[1];
                                 addReduceNone = 2;
                             }
                             else {
@@ -410,14 +410,14 @@ function smartfilter() {
                         if (values[0] <= existingCondition[0]) {
                             if (isFinite(+existingCondition[0])) {
                                 newCondition[0] = values[0];
-                                newCondition[1] = existingCondition[0] - 1;
+                                newCondition[1] = existingCondition[0] - 0.0000000001;
                                 addReduceNone = 1;
                             }
                             else if ((new Date(existingCondition[0])).getTime() != 0) {
                                 newCondition[0] = values[0];
                                 var dt = new Date(existingCondition[0]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getSeconds() - 1);
+                                dt.setSeconds(dt.getMilliseconds() - 1);
                                 newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
                                 addReduceNone = 1;
                             }
@@ -429,15 +429,15 @@ function smartfilter() {
                         else {
                             if (isFinite(+existingCondition[0])) {
                                 newCondition[0] = existingCondition[0];
-                                newCondition[1] = values[0];
+                                newCondition[1] = values[0] - 0.0000000001;
                                 addReduceNone = 2;
                             }
                             else if ((new Date(existingCondition[0])).getTime() != 0) {
-                                var dt = new Date(existingCondition[0]);
+                                newCondition[0] = existingCondition[0];
+                                var dt = new Date(values[0]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getSeconds());
-                                newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                newCondition[1] = values[0];
+                                dt.setSeconds(dt.getMilliseconds() - 1);
+                                newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
                                 addReduceNone = 2;
                             }
                             else {
