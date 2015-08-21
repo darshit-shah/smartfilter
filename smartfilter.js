@@ -22,7 +22,7 @@ function smartfilter() {
 
     var pivotMap = [];
 
-    function getData(from, to, cb) {
+    function getData(from, to, cb, field) {
 
         if (typeof from === 'function') {
             cb = from;
@@ -44,6 +44,15 @@ function smartfilter() {
         }
         if (from != undefined) {
             query.limit = from + "," + to;
+        }
+        if (field != undefined) {
+            query.select = [];
+            for (var i = 0; i < field.length; i++) {
+                if (field[i].alias == undefined) {
+                    field[i].alias = field[i].key;
+                }
+                query.select.push({ field: field[i].key, alias: field[i].alias });
+            }
         }
 
         createToExternalDatabasePivot(query, function (data, isCachedResult) {
@@ -661,21 +670,21 @@ function smartfilter() {
                         cReq.cb({ type: 'records', data: data });
                         processRequestRunning = false;
                         processRequestStack();
-                    });
+                    }, cReq.data.field);
                 }
                 else if (cReq.data.to == undefined) {
                     getData(cReq.data.from, function (data) {
                         cReq.cb({ type: 'records', data: data });
                         processRequestRunning = false;
                         processRequestStack();
-                    });
+                    }, cReq.data.field);
                 }
                 else {
                     getData(cReq.data.from, cReq.data.to, function (data) {
                         cReq.cb({ type: 'records', data: data });
                         processRequestRunning = false;
                         processRequestStack();
-                    });
+                    }, cReq.data.field);
                 }
             }
             else if (cReq.type.toLowerCase() === "count") {
