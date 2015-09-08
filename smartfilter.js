@@ -1,6 +1,7 @@
 ﻿"use strict";
 function smartfilter() {
     var debug = false;
+    var forceOrderBy = false;
 
     var tableName = "";
     var staticFilters = [];
@@ -156,15 +157,17 @@ function smartfilter() {
                 query.groupby.push(caseStatement);
             }
         }
-        query.sortby = [];
-        for (var n = 0; n < pivotMap[index].dimensions.length; n++) {
-            if (typeof pivotMap[index].dimensions[n] === "string") {
-                if (pivotMap[index].dimensions[n] !== "") {
-                    query.sortby.push({ field: pivotMap[index].dimensions[n], order: 'asc' });
+        if (forceOrderBy == true) {
+            query.sortby = [];
+            for (var n = 0; n < pivotMap[index].dimensions.length; n++) {
+                if (typeof pivotMap[index].dimensions[n] === "string") {
+                    if (pivotMap[index].dimensions[n] !== "") {
+                        query.sortby.push({ field: pivotMap[index].dimensions[n], order: 'asc' });
+                    }
                 }
-            }
-            else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
-                query.sortby.push({ field: pivotMap[index].dimensions[n].alias, order: 'asc' });
+                else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
+                    query.sortby.push({ field: pivotMap[index].dimensions[n].alias, order: 'asc' });
+                }
             }
         }
         if (filterCondition !== undefined) {
