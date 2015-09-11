@@ -62,6 +62,23 @@ function smartfilter() {
         });
     }
 
+    function getCount(cb) {
+        var filterCondition = createPivotWhereCondition(-1);
+        console.log([filterCondition, tableName]);
+        var query = {};
+        query.table = tableName;
+        if (filterCondition !== undefined) {
+            query.filter = filterCondition;
+        }
+        query.select = [];
+        query.select.push({ field: 'count(1)', alias: 'count', encloseField: false });
+
+        createToExternalDatabasePivot(query, function (data, isCachedResult) {
+            cb(data);
+            data = null;
+        });
+    }
+
     function pivot(reference, dimensions, measures, allResults, cb) {
         deletePivot(reference);
         pivotMap.push({ reference: reference, dimensions: dimensions, measures: measures });
