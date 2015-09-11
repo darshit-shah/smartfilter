@@ -130,6 +130,9 @@ function smartfilter() {
                 }
                 query.select.push(caseStatement);
             }
+            else {
+                query.select.push({ field: pivotMap[index].dimensions[n].key, alias: pivotMap[index].dimensions[n].key, encloseField: pivotMap[index].dimensions[n].encloseField });
+            }
         }
         var measures = pivotMap[index].measures;
         for (var j = 0; j < measures.length; j++) {
@@ -156,6 +159,9 @@ function smartfilter() {
                 }
                 query.groupby.push(caseStatement);
             }
+            else {
+                query.groupby.push({ field: pivotMap[index].dimensions[n].key, encloseField: pivotMap[index].dimensions[n].encloseField });
+            }
         }
         if (forceOrderBy == true) {
             query.sortby = [];
@@ -167,6 +173,9 @@ function smartfilter() {
                 }
                 else if (Array.isArray(pivotMap[index].dimensions[n].values)) {
                     query.sortby.push({ field: pivotMap[index].dimensions[n].alias, order: 'asc' });
+                }
+                else {
+                    query.sortby.push({ field: pivotMap[index].dimensions[n].key, encloseField: pivotMap[index].dimensions[n].encloseField });
                 }
             }
         }
@@ -377,84 +386,114 @@ function smartfilter() {
                 if (values.length === 2) {
                     //left  is same
                     if (existingCondition.length === 2 && existingCondition[0] === values[0]) {
-                        // added
-                        if (existingCondition[1] <= values[1]) {
-                            if (isFinite(+existingCondition[1])) {
+                        // number type
+                        if (isFinite(+existingCondition[1])) {
+                            // added
+                            if (existingCondition[1] <= values[1]) {
                                 newCondition[0] = existingCondition[1] + 0.0000000001;
                                 newCondition[1] = values[1];
                                 addReduceNone = 1;
                             }
-                            else if ((new Date(existingCondition[1])).getTime() != 0) {
-                                var dt = new Date(existingCondition[1]);
-                                dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getMilliseconds() + 1);
-                                newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                newCondition[1] = values[1];
-                                addReduceNone = 1;
-                            }
+                            //reduced
                             else {
-                                //nothing
-                            }
-                        }
-                        //reduced
-                        else {
-                            if (isFinite(+existingCondition[1])) {
                                 newCondition[0] = values[1] + 0.0000000001;
                                 newCondition[1] = existingCondition[1];
                                 addReduceNone = 2;
                             }
-                            else if ((new Date(existingCondition[1])).getTime() != 0) {
+                        }
+                        //date type
+                        else if ((new Date(existingCondition[1])).getTime() != 0) {
+                            // added
+                            if (new Date(existingCondition[1]) <= new Date(values[1])) {
+                                var dt = new Date(existingCondition[1]);
+                                dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                                if (dt.getSeconds() == 0) {
+                                    dt.setDate(dt.getDate() + 1);
+                                    newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+                                }
+                                else {
+                                    dt.setMilliseconds(dt.getMilliseconds() + 1);
+                                    newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                }
+                                newCondition[1] = values[1];
+                                addReduceNone = 1;
+                            }
+                            //reduced
+                            else {
                                 var dt = new Date(values[1]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getMilliseconds + 1);
-                                newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                if (dt.getSeconds() == 0) {
+                                    dt.setDate(dt.getDate() + 1);
+                                    newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+                                }
+                                else {
+                                    dt.setMilliseconds(dt.getMilliseconds() + 1);
+                                    newCondition[0] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                }
                                 newCondition[1] = existingCondition[1];
+                                //console.log(values, existingCondition, newCondition);
+                                //process.exit(0);
                                 addReduceNone = 2;
                             }
-                            else {
-                                //nothing
-                            }
+                        }
+                        //other type
+                        else {
+                            newCondition[0] = values[0];
+                            newCondition[1] = values[1];
                         }
                     }
                     //right is same
                     else if (existingCondition.length === 2 && existingCondition[1] === values[1]) {
-                        // added
-                        if (values[0] <= existingCondition[0]) {
-                            if (isFinite(+existingCondition[0])) {
+                        //number type
+                        if (isFinite(+existingCondition[0])) {
+                            // added
+                            if (values[0] <= existingCondition[0]) {
                                 newCondition[0] = values[0];
                                 newCondition[1] = existingCondition[0] - 0.0000000001;
                                 addReduceNone = 1;
                             }
-                            else if ((new Date(existingCondition[0])).getTime() != 0) {
-                                newCondition[0] = values[0];
-                                var dt = new Date(existingCondition[0]);
-                                dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getMilliseconds() - 1);
-                                newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
-                                addReduceNone = 1;
-                            }
+                            //reduced
                             else {
-                                //nothing
-                            }
-                        }
-                        //reduced
-                        else {
-                            if (isFinite(+existingCondition[0])) {
                                 newCondition[0] = existingCondition[0];
                                 newCondition[1] = values[0] - 0.0000000001;
                                 addReduceNone = 2;
                             }
-                            else if ((new Date(existingCondition[0])).getTime() != 0) {
+                        }
+                        //date type
+                        else if ((new Date(existingCondition[0])).getTime() != 0) {
+                            if (new Date(values[0]) <= new Date(existingCondition[0])) {
+                                newCondition[0] = values[0];
+                                var dt = new Date(existingCondition[0]);
+                                dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
+                                if (dt.getSeconds() == 0) {
+                                    dt.setDate(dt.getDate() - 1);
+                                    newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+                                }
+                                else {
+                                    dt.setMilliseconds(dt.getMilliseconds() - 1);
+                                    newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                }
+                                addReduceNone = 1;
+                            }
+                            else {
                                 newCondition[0] = existingCondition[0];
                                 var dt = new Date(values[0]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
-                                dt.setSeconds(dt.getMilliseconds() - 1);
-                                newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                if (dt.getSeconds() == 0) {
+                                    dt.setDate(dt.getDate() - 1);
+                                    newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate();
+                                }
+                                else {
+                                    dt.setMilliseconds(dt.getMilliseconds() - 1);
+                                    newCondition[1] = dt.getFullYear() + '-' + (dt.getMonth() + 1) + '-' + dt.getDate() + ' ' + dt.getHours() + ':' + dt.getMinutes() + ':' + dt.getSeconds();
+                                }
                                 addReduceNone = 2;
                             }
-                            else {
-                                //nothing
-                            }
+                        }
+                        //other type
+                        else {
+                            newCondition[0] = values[0];
+                            newCondition[1] = values[1];
                         }
                     }
                     //nothing is same
