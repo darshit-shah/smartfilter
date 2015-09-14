@@ -277,7 +277,7 @@ function smartfilter() {
                 //replace entire result
                 else {
                     pivotListResult[pivotMap[i].reference] = data;
-                    pivotListFilters[pivotMap[i].reference] = query.filter;
+                    pivotListFilters[pivotMap[i].reference] = [query.filter];
                     pivotListResultKey[pivotMap[i].reference] = [];
                     for (var j = 0; j < data.length; j++) {
                         var pivotMapDimensionKey = [];
