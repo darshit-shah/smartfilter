@@ -376,7 +376,29 @@ function smartfilter() {
     }
 
     function filter(filterType, dimension, values, cb) {
-        values = values.sort();
+        if (values.length > 0 && typeof values != "string") {
+            //numeric type
+            if (isFinite(+values[0])) {
+                values = values.sort(function (a, b) {
+                    return +a - +b;
+                });
+            }
+            //date type
+            else if ((new Date(values[0])).getTime() != 0) {
+                values = values.sort(function (a, b) {
+                    return (new Date(a)).getTime() - (new Date(b)).getTime();
+                });
+            }
+            // string types
+            else if (typeof values[0] == 'string') {
+                values = values.sort();
+            }
+            //other types
+            else {
+                // do nothing
+            }
+        }
+        //values = values.sort();
         if (filteredDimension[dimension] === undefined) {
             filteredDimension[dimension] = {};
             filteredDimension[dimension].field = dimension;
@@ -406,15 +428,15 @@ function smartfilter() {
                         // number type
                         if (isFinite(+existingCondition[1])) {
                             // added
-                            if (existingCondition[1] <= values[1]) {
-                                newCondition[0] = existingCondition[1] + 0.0000000001;
-                                newCondition[1] = values[1];
+                            if (+existingCondition[1] <= +values[1]) {
+                                newCondition[0] = +existingCondition[1] + 0.0000000001;
+                                newCondition[1] = +values[1];
                                 addReduceNone = 1;
                             }
                             //reduced
                             else {
-                                newCondition[0] = values[1] + 0.0000000001;
-                                newCondition[1] = existingCondition[1];
+                                newCondition[0] = +values[1] + 0.0000000001;
+                                newCondition[1] = +existingCondition[1];
                                 addReduceNone = 2;
                             }
                         }
@@ -464,15 +486,15 @@ function smartfilter() {
                         //number type
                         if (isFinite(+existingCondition[0])) {
                             // added
-                            if (values[0] <= existingCondition[0]) {
-                                newCondition[0] = values[0];
-                                newCondition[1] = existingCondition[0] - 0.0000000001;
+                            if (+values[0] <= +existingCondition[0]) {
+                                newCondition[0] = +values[0];
+                                newCondition[1] = +existingCondition[0] - 0.0000000001;
                                 addReduceNone = 1;
                             }
                             //reduced
                             else {
-                                newCondition[0] = existingCondition[0];
-                                newCondition[1] = values[0] - 0.0000000001;
+                                newCondition[0] = +existingCondition[0];
+                                newCondition[1] = +values[0] - 0.0000000001;
                                 addReduceNone = 2;
                             }
                         }
@@ -600,14 +622,14 @@ function smartfilter() {
                 newCondition = values;
                 addReduceNone = 0;
             }
-            if (debug) {
+            if (true || debug) {
                 console.log('old filter:', filteredDimension[dimension].filters);
                 console.log('original filter: ', values);
                 console.log('changed  filter: ', newCondition);
                 console.log('merge type: ', (addReduceNone === 0 ? 'replace' : (addReduceNone === 1 ? 'Add' : 'Reduce')));
             }
             filteredDimension[dimension].filters = newCondition;
-            if (debug)
+            if (true || debug)
                 console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
         }
         executePivots(addReduceNone, dimension, function (data) {
