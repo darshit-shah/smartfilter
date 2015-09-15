@@ -622,14 +622,14 @@ function smartfilter() {
                 newCondition = values;
                 addReduceNone = 0;
             }
-            if (true || debug) {
+            if (debug) {
                 console.log('old filter:', filteredDimension[dimension].filters);
                 console.log('original filter: ', values);
                 console.log('changed  filter: ', newCondition);
                 console.log('merge type: ', (addReduceNone === 0 ? 'replace' : (addReduceNone === 1 ? 'Add' : 'Reduce')));
             }
             filteredDimension[dimension].filters = newCondition;
-            if (true || debug)
+            if (debug)
                 console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
         }
         executePivots(addReduceNone, dimension, function (data) {
