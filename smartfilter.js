@@ -23,6 +23,16 @@ function smartfilter() {
 
     var pivotMap = [];
 
+    function flushCache(cb) {
+        oldResults = {};
+        var keys = Object.keys(filteredDimension);
+        for (var i = 0; i < keys.length; i++) {
+            filteredDimension[keys[i]].filters = [];
+        }
+        if (cb)
+            cb();
+    }
+
     function getData(from, to, cb, field) {
 
         if (typeof from === 'function') {
@@ -148,7 +158,9 @@ function smartfilter() {
                 query.select.push(caseStatement);
             }
             else {
-                query.select.push({ field: pivotMap[index].dimensions[n].key, alias: pivotMap[index].dimensions[n].key, encloseField: pivotMap[index].dimensions[n].encloseField });
+                if (pivotMap[index].dimensions[n].alias == null)
+                    pivotMap[index].dimensions[n].alias = pivotMap[index].dimensions[n].key;
+                query.select.push({ field: pivotMap[index].dimensions[n].key, alias: pivotMap[index].dimensions[n].alias, encloseField: pivotMap[index].dimensions[n].encloseField });
             }
         }
         var measures = pivotMap[index].measures;
@@ -371,7 +383,7 @@ function smartfilter() {
         for (var i = 0; i < staticFilters.length; i++) {
             staticFilters[i].filters = staticFilters[i].filters.sort();
         }
-        oldResults = {};
+        flushCache();
         executePivots(0, null, cb);
     }
 
@@ -803,6 +815,14 @@ function smartfilter() {
                         processRequestStack();
                     });
                 }
+            }
+            else if (cReq.type.toLowerCase() === "flushcache") {
+                flushCache();
+                var data = {};
+                data.type = 'data';
+                cReq.cb(data);
+                processRequestRunning = false;
+                processRequestStack();
             }
             else {
 
