@@ -216,7 +216,7 @@ function smartfilter() {
 
     function getAllPivotResults(index, addReduceNone, dimension, reference, cb) {
         if (index < pivotMap.length) {
-            if (pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === dimension) {
+            if (pivotMap[index].dimensions.length === 1 && (pivotMap[index].dimensions[0] === dimension || pivotMap[index].dimensions[0].key === dimension)) {
                 getAllPivotResults(index + 1, addReduceNone, dimension, reference, cb);
                 return;
             }
@@ -330,7 +330,7 @@ function smartfilter() {
         var filtersTobeApplied = [].concat(staticFilters);
         for (var i = 0; i < filterList.length; i++) {
             if (filteredDimension[filterList[i]] != null && filteredDimension[filterList[i]].filters != null && filteredDimension[filterList[i]].filters.length > 0
-                    && (index == -1 || (pivotMap[index] && pivotMap[index].dimensions.length === 1 && pivotMap[index].dimensions[0] === filterList[i]) == false)) {
+                    && (index == -1 || (pivotMap[index] && pivotMap[index].dimensions.length === 1 && (pivotMap[index].dimensions[0] === filterList[i] || pivotMap[index].dimensions[0].key === filterList[i])) == false)) {
                 filtersTobeApplied.push({ filterType: filteredDimension[filterList[i]].filterType, field: filterList[i], filters: filteredDimension[filterList[i]].filters });
             }
         }
