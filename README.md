@@ -87,12 +87,12 @@ Here, 'options' is a JSON parameter which contains two keys
 
 First of all you have to connect to a specific table of your database. For this, you need to pass database connection configurations and table name as supporting data.
 
-Here is a sample code to connect to 'Stock' table of given mysql database. 
+Here is a sample code to connect to 'Stock' table of given mysql database.
 
 ```js
 
 //Database connection settings
-var dbConfig = { 
+var dbConfig = {
   type: 'database',//type of connection. Currently connection to only database is available
   databaseType: 'mysql', //type of database. Currently you can connect to only mysql database
   host: '54.251.110.52', //host name of mysql database
@@ -103,22 +103,22 @@ var dbConfig = {
 };
 
 //call smartfilterRequest service with type = 'connect'.
-mysmartfilter.smartfilterRequest({ 
+mysmartfilter.smartfilterRequest({
   type: 'connect', //name of operation you want to perform
-  data: { 
+  data: {
     tableName: 'Stock', //Name of the table on which you want to create smartfilter object
     dbConfig: dbConfig //database configuration
-    } 
-  }, function (output) {
-    if (output.type !== 'error') {
-      //In this case operation is completed successsfully.
-      console.log('Success', output);
-    }
-    else {
-      //In this case some error has occured.
-      console.log('Fail', output);
-    }
-  });
+  }
+}, function (output) {
+  if (output.type !== 'error') {
+    //In this case operation is completed successsfully.
+    console.log('Success', output);
+  }
+  else {
+    //In this case some error has occured.
+    console.log('Fail', output);
+  }
+});
 
 ```
 
@@ -133,9 +133,9 @@ Here is a sample code to create a pivot on 'Type' as Dimension and 'Sum' of 'Vol
 
 ```js
 
-mysmartfilter.smartfilterRequest({ 
-  type: 'pivot', 
-  data: { 
+mysmartfilter.smartfilterRequest({
+  type: 'pivot',
+  data: {
     reference: 'myPivot',
     dimensions: [//Multiple dimensions can be specified
       'Type'//Column name of Dimension field
@@ -146,7 +146,7 @@ mysmartfilter.smartfilterRequest({
         aggregation: 'sum'//type of aggregation which needs to be applied on measure
       }
     ]
-  } 
+  }
 }, function (output) {
   if (output.type !== 'error') {
     //In this case operation is completed successsfully.
@@ -171,23 +171,23 @@ Here is a sample code to add filter on 'Qtr' column, with type of filter as 'in'
 
 ```js
 
-mysmartfilter.smartfilterRequest({ 
-  type: 'filter', 
-  data: { 
+mysmartfilter.smartfilterRequest({
+  type: 'filter',
+  data: {
     field: 'Qtr', //Column name on which filter needs to be applied
     filterType: 'in', //type of filter. 'in' means from list of values, 'range' means between
     filters: ['Q1', 'Q2'] // Qtr should be either 'Q1' or 'Q2'
-    }    
-  }, function (output) {
-    if (output.type !== 'error') {
-      //In this case operation is completed successsfully.
-      console.log('Success', output);
-    }
-    else {
-      //In this case some error has occured.
-      console.log('Fail', output);
-    }
-  });
+  }    
+}, function (output) {
+  if (output.type !== 'error') {
+    //In this case operation is completed successsfully.
+    console.log('Success', output);
+  }
+  else {
+    //In this case some error has occured.
+    console.log('Fail', output);
+  }
+});
 
 ```
 
@@ -200,19 +200,19 @@ Now if you want to fetch raw records from base table after applying all filter c
 
 ```js
 
-mysmartfilter.smartfilterRequest({ 
+mysmartfilter.smartfilterRequest({
   type: 'data', // fetch raw data
   data: {  }
-  }, function (output) {
-    if (output.type !== 'error') {
-      //In this case operation is completed successsfully.
-      console.log('Success', output);
-    }
-    else {
-      //In this case some error has occured.
-      console.log('Fail', output);
-    }
-  });
+}, function (output) {
+  if (output.type !== 'error') {
+    //In this case operation is completed successsfully.
+    console.log('Success', output);
+  }
+  else {
+    //In this case some error has occured.
+    console.log('Fail', output);
+  }
+});
 
 ```
 
@@ -233,51 +233,51 @@ var dbConfig = { type: "database", databaseType: 'mysql', database: 'DarshitShah
 var mysmartfilter = new smartfilter();
 //Step 1. Connect to mysql database
 mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", dbConfig: dbConfig} }, function (output) {
-    if (output.type !== 'error') {
+  if (output.type !== 'error') {
+    /*
+    Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
+    Both traditional and SmartFilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
+    But SmartFilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
+    */
+    mysmartfilter.smartfilterRequest({ type: "pivot", data: { reference:'myPivot', dimensions:['Type'], measures:[{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
+      if (output.type !== 'error') {
         /*
-        Step 2. Add pivot on 'Type' field with 'Sum' of 'Volume' as measure
-        Both traditional and SmartFilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
-        But SmartFilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
+        Step 3. Apply Filter Qtr = 'Q1'
+        Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
+        And same as step 2, it will store query and result in cache
         */
-        mysmartfilter.smartfilterRequest({ type: "pivot", data: { reference:'myPivot', dimensions:['Type'], measures:[{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
-            if (output.type !== 'error') {
+        mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
+          if (output.type !== 'error') {
+            /*
+            Step 4. Apply Filter Qtr in ['Q1', 'Q2']
+            In Traditional Case it will fire new query like "select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"
+            But here, SmartFilter will apply its own logic to find its result.
+            By comparing Step 3 and current filter conditions, it will identify that there is a scope of improving filter condition.
+            Instead of fetching all records where Qtr is either Q1 or Q2, it should just fetch records where Qtr is Q2 and use existing cached result for Qtr = Q1 from Step 3.
+            So final query would be "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
+            Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
+            And at the end it will store query and result in cache.
+            */
+            mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
+              if (output.type !== 'error') {
                 /*
-                Step 3. Apply Filter Qtr = 'Q1'
-                Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
-                And same as step 2, it will store query and result in cache
+                Step 5. Apply Filter Qtr = 'Q2'
+                Again here in traditional approach you will fire query like "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
+                guess what, SmartFilter has already cached this query's and its output in Step 4.
+                So result is returned directly from cache without even touching database.
                 */
-                mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
-                    if (output.type !== 'error') {
-                        /*
-                        Step 4. Apply Filter Qtr in ['Q1', 'Q2']
-                        In Traditional Case it will fire new query like "select Type, sum(Volume) from Stock where Qtr in ['Q1', 'Q2'] group by Type"
-                        But here, SmartFilter will apply its own logic to find its result. 
-                        By comparing Step 3 and current filter conditions, it will identify that there is a scope of improving filter condition. 
-                        Instead of fetching all records where Qtr is either Q1 or Q2, it should just fetch records where Qtr is Q2 and use existing cached result for Qtr = Q1 from Step 3.
-                        So final query would be "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
-                        Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
-                        And at the end it will store query and result in cache.
-                        */
-                        mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
-                            if (output.type !== 'error') {
-                                /*
-                                Step 5. Apply Filter Qtr = 'Q2'
-                                Again here in traditional approach you will fire query like "select Type, sum(Volume) from Stock where Qtr in ['Q2'] group by Type"
-                                guess what, SmartFilter has already cached this query's and its output in Step 4.
-                                So result is returned directly from cache without even touching database.
-                                */
-                                mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
-                                    if (output.type !== 'error') {
-                                        console.log("Result:", output.data, '\n\n');
-                                    }
-                                });
-                            }
-                        });
-                    }
+                mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
+                  if (output.type !== 'error') {
+                    console.log("Result:", output.data, '\n\n');
+                  }
                 });
-            }
+              }
+            });
+          }
         });
-    }
+      }
+    });
+  }
 });
 
 ```
