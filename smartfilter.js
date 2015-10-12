@@ -22,7 +22,7 @@ function smartfilter() {
   var cConn = undefined;
 
   var pivotMap = [];
-  
+
   function flushCache(cb) {
     oldResults = {};
     var keys = Object.keys(filteredDimension);
@@ -241,8 +241,24 @@ function smartfilter() {
         if (addReduceNone === 1) {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
+            var aliasArr=[];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              var alias='';
+              if(typeof pivotMap[i].dimensions[n] === 'string'){
+                alias = pivotMap[i].dimensions[n];
+              }
+              else {
+                if(pivotMap[i].dimensions[n].alias == undefined){
+                  alias=pivotMap[i].dimensions[n].key;
+                }
+                else{
+                  alias=pivotMap[i].dimensions[n].alias;
+                }
+              }
+              if(aliasArr.indexOf(alias)==-1){
+                aliasArr.push(alias)
+                pivotMapDimensionKey.push(data[j][alias]);
+              }
             }
             //var keyIndex = pivotListResultKey[pivotMap[i].dimensions.join("_$#$_")].indexOf(pivotMapDimensionKey.join("_$#$_"));
             var keyIndex = pivotListResultKey[pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
@@ -263,8 +279,24 @@ function smartfilter() {
         else if (addReduceNone === 2) {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
+            var aliasArr=[];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              var alias='';
+              if(typeof pivotMap[i].dimensions[n] === 'string'){
+                alias = pivotMap[i].dimensions[n];
+              }
+              else {
+                if(pivotMap[i].dimensions[n].alias == undefined){
+                  alias=pivotMap[i].dimensions[n].key;
+                }
+                else{
+                  alias=pivotMap[i].dimensions[n].alias;
+                }
+              }
+              if(aliasArr.indexOf(alias)==-1){
+                aliasArr.push(alias)
+                pivotMapDimensionKey.push(data[j][alias]);
+              }
             }
             var keyIndex = pivotListResultKey[pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
             if (keyIndex === -1) {
@@ -272,8 +304,7 @@ function smartfilter() {
               throw ("node-cross-filter, reduce part could not found existing row.");
             }
             else {
-
-              if (pivotMap[i].dimensions.length === 1 && pivotMap[i].dimensions[0] === dimension) {
+              if (aliasArr.length == 1 && (pivotMap[i].dimensions[0] == dimension || pivotMap[i].dimensions[0].key == dimension)) {
                 pivotListResult[pivotMap[i].reference].splice(keyIndex, 1);
                 pivotListResultKey[pivotMap[i].reference].splice(keyIndex, 1);
                 pivotListFilters[pivotMap[i].reference].splice(keyIndex, 1);
@@ -293,8 +324,24 @@ function smartfilter() {
           pivotListResultKey[pivotMap[i].reference] = [];
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
+            var aliasArr=[];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              var alias='';
+              if(typeof pivotMap[i].dimensions[n] === 'string'){
+                alias = pivotMap[i].dimensions[n];
+              }
+              else {
+                if(pivotMap[i].dimensions[n].alias == undefined){
+                  alias=pivotMap[i].dimensions[n].key;
+                }
+                else{
+                  alias=pivotMap[i].dimensions[n].alias;
+                }
+              }
+              if(aliasArr.indexOf(alias)==-1){
+                aliasArr.push(alias)
+                pivotMapDimensionKey.push(data[j][alias]);
+              }
             }
             pivotListResultKey[pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
           }
