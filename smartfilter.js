@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 function smartfilter() {
 	var debug = false;
 	var forceOrderBy = false;
@@ -22,13 +22,16 @@ function smartfilter() {
 	var cConn = undefined;
 
 	var pivotMap = [];
+	var flush = false;
+	var useAddReduce = false;
 
 	function flushCache(cb) {
 		oldResults = {};
-		var keys = Object.keys(filteredDimension);
-		for (var i = 0; i < keys.length; i++) {
-			filteredDimension[keys[i]].filters = [];
-		}
+		flush = true;
+		//    var keys = Object.keys(filteredDimension);
+		//    for (var i = 0; i < keys.length; i++) {
+		//      filteredDimension[keys[i]].filters = [];
+		//    }
 		if (cb)
 			cb();
 	}
@@ -236,7 +239,6 @@ function smartfilter() {
 					console.log(data.length + ' rows Returned for dimensions \'' + pivotMap[i].dimensions + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db') + '. addReduceNone: ' + addReduceNone);
 				}
 
-
 				//add to existing
 				if (addReduceNone === 1) {
 					for (var j = 0; j < data.length; j++) {
@@ -256,7 +258,7 @@ function smartfilter() {
 								}
 							}
 							if (aliasArr.indexOf(alias) == -1) {
-								aliasArr.push(alias)
+								aliasArr.push(alias);
 								pivotMapDimensionKey.push(data[j][alias]);
 							}
 						}
@@ -266,11 +268,13 @@ function smartfilter() {
 							pivotListResult[pivotMap[i].reference].push(data[j]);
 							pivotListResultKey[pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
 							pivotListFilters[pivotMap[i].reference].push(query.filter);
-						}
-						else {
-
+						} else {
+							var measureAlias = [];
 							for (var k = 0; k < measures.length; k++) {
-								pivotListResult[pivotMap[i].reference][keyIndex][measures[k].alias] += data[j][measures[k].alias];
+								if (measureAlias.indexOf(measures[k].alias) == -1) {
+									pivotListResult[pivotMap[i].reference][keyIndex][measures[k].alias] += data[j][measures[k].alias];
+									measureAlias.push(measures[k].alias);
+								}
 							}
 						}
 					}
@@ -294,7 +298,7 @@ function smartfilter() {
 								}
 							}
 							if (aliasArr.indexOf(alias) == -1) {
-								aliasArr.push(alias)
+								aliasArr.push(alias);
 								pivotMapDimensionKey.push(data[j][alias]);
 							}
 						}
@@ -310,8 +314,21 @@ function smartfilter() {
 								pivotListFilters[pivotMap[i].reference].splice(keyIndex, 1);
 							}
 							else {
+								var measureAlias = [];
+								var zeroCount = 0;
 								for (var k = 0; k < measures.length; k++) {
-									pivotListResult[pivotMap[i].reference][keyIndex][measures[k].alias] -= data[j][measures[k].alias];
+									if (measureAlias.indexOf(measures[k].alias) == -1) {
+										pivotListResult[pivotMap[i].reference][keyIndex][measures[k].alias] -= data[j][measures[k].alias];
+										if (pivotListResult[pivotMap[i].reference][keyIndex][measures[k].alias] == 0) {
+											zeroCount++;
+										}
+										measureAlias.push(measures[k].alias);
+									}
+								}
+								if (measureAlias.length == zeroCount) {
+									pivotListResult[pivotMap[i].reference].splice(keyIndex, 1);
+									pivotListResultKey[pivotMap[i].reference].splice(keyIndex, 1);
+									pivotListFilters[pivotMap[i].reference].splice(keyIndex, 1);
 								}
 							}
 						}
@@ -339,7 +356,7 @@ function smartfilter() {
 								}
 							}
 							if (aliasArr.indexOf(alias) == -1) {
-								aliasArr.push(alias)
+								aliasArr.push(alias);
 								pivotMapDimensionKey.push(data[j][alias]);
 							}
 						}
@@ -419,22 +436,22 @@ function smartfilter() {
 		if (debug)
 			console.log('actual filter: ', (filterCondition != undefined ? filterCondition.and : 'none'));
 		return filterCondition;
-    }
+	}
 
-    function createToExternalDatabasePivot(query, cb) {
+	function createToExternalDatabasePivot(query, cb) {
 		queryExecutor(query, cb);
-    }
+	}
 
-    function staticFilter(filters, cb) {
+	function staticFilter(filters, cb) {
 		staticFilters = filters;
 		for (var i = 0; i < staticFilters.length; i++) {
 			staticFilters[i].filters = staticFilters[i].filters.sort();
 		}
 		flushCache();
 		executePivots(0, null, cb);
-    }
+	}
 
-    function filter(filterType, dimension, values, cb) {
+	function filter(filterType, dimension, values, cb) {
 		if (values.length > 0 && typeof values != "string") {
 			//numeric type
 			if (isFinite(+values[0])) {
@@ -476,9 +493,11 @@ function smartfilter() {
 		}
 		else {
 			var newCondition = [];
-
 			if (typeof values === "string") {
 				newCondition = [values];
+			}
+			else if (flush === true || useAddReduce === false) {
+				newCondition = values;
 			}
 			else if (filterType === 'range') {
 				if (values.length === 2) {
@@ -695,11 +714,12 @@ function smartfilter() {
 			filteredDimension[dimension].filters = values;
 			updateOldResults(data, dimension, cb);
 			//cb(data);
+			flush = false;
 			data = null;
 		});
-    }
+	}
 
-    function updateOldResults(data, dimension, cb) {
+	function updateOldResults(data, dimension, cb) {
 		for (var i = 0; i < pivotMap.length; i++) {
 			var query = prepareQueryJSON(i, dimension);
 			var queryString = objConnection.prepareQuery(query);
@@ -707,9 +727,9 @@ function smartfilter() {
 		}
 		cb(data);
 		data = null;
-    }
+	}
 
-    function connect(tblName, config, cb) {
+	function connect(tblName, config, cb) {
 
 		tableName = tblName;
 		var connectionIdentifier = require('node-database-connectors');
@@ -725,9 +745,9 @@ function smartfilter() {
 			}
 			cb();
 		});
-    }
+	}
 
-    function queryExecutor(query, cb) {
+	function queryExecutor(query, cb) {
 
 		if (debug)
 			console.log('query', JSON.stringify(query));
@@ -758,9 +778,9 @@ function smartfilter() {
 			rows = null;
 			fields = null;
 		});
-    }
+	}
 
-    function processRequestStack() {
+	function processRequestStack() {
 
 		cReq = null;
 		if (myRequestStack.length > 0) {
@@ -879,18 +899,18 @@ function smartfilter() {
 				console.log('unknown type: ' + cReq.type + ' would end connection');
 			}
 		}
-    }
+	}
 
-    this.smartfilterRequest = function (m, cb) {
+	this.smartfilterRequest = function (m, cb) {
 
 		m.cb = cb;
 		myRequestStack.push(m);
 		if (processRequestRunning === false) {
 			processRequestStack();
 		}
-    }
+	}
 
-    return this;
+	return this;
 }
 
 module.exports = smartfilter;
