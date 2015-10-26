@@ -407,7 +407,7 @@ function smartfilter() {
 					filterCondition.and.push({ field: filtersTobeApplied[i].field, operator: 'gteq', value: filtersTobeApplied[i].filters[0] });
 					filterCondition.and.push({ field: filtersTobeApplied[i].field, operator: 'lteq', value: filtersTobeApplied[i].filters[1] });
 				}
-				else if (filtersTobeApplied[i].filterType === 'withinAll') {
+				else if (filtersTobeApplied[i].filterType === 'withinall') {
 					for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
 						var filterJSON = [];
 						filterJSON.push({ field: filtersTobeApplied[i].field, operator: 'eq', value: filtersTobeApplied[i].filters[j] });
@@ -418,7 +418,7 @@ function smartfilter() {
 						filterJSON = null;
 					}
 				}
-				else if (filtersTobeApplied[i].filterType === 'withinAny') {
+				else if (filtersTobeApplied[i].filterType === 'withinany') {
 					filterCondition.and.push({ or: [] });
 					for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
 						var filterJSON = [];
@@ -446,6 +446,7 @@ function smartfilter() {
 		staticFilters = filters;
 		for (var i = 0; i < staticFilters.length; i++) {
 			staticFilters[i].filters = staticFilters[i].filters.sort();
+			staticFilters[i].filterType = staticFilters[i].filterType.toLowerCase(); 
 		}
 		flushCache();
 		executePivots(0, null, cb);
@@ -480,7 +481,7 @@ function smartfilter() {
 			filteredDimension[dimension].field = dimension;
 			filteredDimension[dimension].filters = [];
 		}
-		filteredDimension[dimension].filterType = filterType;
+		filteredDimension[dimension].filterType = filterType.toLowerCase();
 		var existingCondition = filteredDimension[dimension].filters;
 		filteredDimension[dimension].filters = values;
 		var addReduceNone = 0; //None = 0, Add = 1, Reduce = 2
