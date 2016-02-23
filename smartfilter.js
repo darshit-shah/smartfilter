@@ -306,7 +306,13 @@ function smartfilter() {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              if (typeof pivotMap[index].dimensions[n] === "string") {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              } else if (typeof pivotMap[index].dimensions[n].alias != undefined) {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].alias]);
+              } else {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].key]);
+              }
             }
             //var keyIndex = pivotListResultKey[pivotMap[i].dimensions.join("_$#$_")].indexOf(pivotMapDimensionKey.join("_$#$_"));
             var keyIndex = pivotListResultKey[pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
@@ -327,7 +333,13 @@ function smartfilter() {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              if (typeof pivotMap[index].dimensions[n] === "string") {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              } else if (typeof pivotMap[index].dimensions[n].alias != undefined) {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].alias]);
+              } else {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].key]);
+              }
             }
             var keyIndex = pivotListResultKey[pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
             if (keyIndex === -1) {
@@ -355,7 +367,13 @@ function smartfilter() {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
             for (var n = 0; n < pivotMap[i].dimensions.length; n++) {
-              pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              if (typeof pivotMap[index].dimensions[n] === "string") {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n]]);
+              } else if (typeof pivotMap[index].dimensions[n].alias != undefined) {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].alias]);
+              } else {
+                pivotMapDimensionKey.push(data[j][pivotMap[i].dimensions[n].key]);
+              }
             }
             pivotListResultKey[pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
           }
