@@ -429,18 +429,21 @@ function smartfilter() {
                     filterCondition.and.push({
                         field: filtersTobeApplied[i].field,
                         operator: 'eq',
-                        value: filtersTobeApplied[i].filters
+                        value: filtersTobeApplied[i].filters,
+                        encloseField: false
                     });
                 } else if (filtersTobeApplied[i].filterType === 'range') {
                     filterCondition.and.push({
                         field: filtersTobeApplied[i].field,
                         operator: 'gteq',
-                        value: filtersTobeApplied[i].filters[0]
+                        value: filtersTobeApplied[i].filters[0],
+                        encloseField: false
                     });
                     filterCondition.and.push({
                         field: filtersTobeApplied[i].field,
                         operator: 'lteq',
-                        value: filtersTobeApplied[i].filters[1]
+                        value: filtersTobeApplied[i].filters[1],
+                        encloseField: false
                     });
                 } else if (filtersTobeApplied[i].filterType === 'withinAll') {
                     for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
@@ -448,22 +451,26 @@ function smartfilter() {
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'eq',
-                            value: filtersTobeApplied[i].filters[j]
+                            value: filtersTobeApplied[i].filters[j],
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: filtersTobeApplied[i].filters[j] + ',%'
+                            value: filtersTobeApplied[i].filters[j] + ',%',
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: '%, ' + filtersTobeApplied[i].filters[j]
+                            value: '%, ' + filtersTobeApplied[i].filters[j],
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: '%, ' + filtersTobeApplied[i].filters[j] + ',%'
+                            value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
+                        encloseField: false
                         });
                         filterCondition.and.push(JSON.parse(JSON.stringify({
                             or: filterJSON
@@ -479,22 +486,26 @@ function smartfilter() {
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'eq',
-                            value: filtersTobeApplied[i].filters[i]
+                            value: filtersTobeApplied[i].filters[i],
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: filtersTobeApplied[i].filters[j] + ',%'
+                            value: filtersTobeApplied[i].filters[j] + ',%',
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: '%, ' + filtersTobeApplied[i].filters[j]
+                            value: '%, ' + filtersTobeApplied[i].filters[j],
+                        encloseField: false
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
-                            value: '%, ' + filtersTobeApplied[i].filters[j] + ',%'
+                            value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
+                        encloseField: false
                         });
                         filterCondition.and[filterCondition.and.length - 1].or.push({
                             or: filterJSON
