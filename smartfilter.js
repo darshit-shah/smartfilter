@@ -419,7 +419,8 @@ function smartfilter() {
                 filtersTobeApplied.push({
                     filterType: filteredDimension[filterList[i]].filterType,
                     field: filterList[i],
-                    filters: filteredDimension[filterList[i]].filters
+                    filters: filteredDimension[filterList[i]].filters,
+					encloseField: filteredDimension[filterList[i]].encloseField
                 });
             }
         }
@@ -430,20 +431,20 @@ function smartfilter() {
                         field: filtersTobeApplied[i].field,
                         operator: 'eq',
                         value: filtersTobeApplied[i].filters,
-                        encloseField: false
+                        encloseField: filtersTobeApplied[i].encloseField
                     });
                 } else if (filtersTobeApplied[i].filterType === 'range') {
                     filterCondition.and.push({
                         field: filtersTobeApplied[i].field,
                         operator: 'gteq',
                         value: filtersTobeApplied[i].filters[0],
-                        encloseField: false
+                        encloseField: filtersTobeApplied[i].encloseField
                     });
                     filterCondition.and.push({
                         field: filtersTobeApplied[i].field,
                         operator: 'lteq',
                         value: filtersTobeApplied[i].filters[1],
-                        encloseField: false
+                        encloseField: filtersTobeApplied[i].encloseField
                     });
                 } else if (filtersTobeApplied[i].filterType === 'withinAll') {
                     for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
@@ -452,25 +453,25 @@ function smartfilter() {
                             field: filtersTobeApplied[i].field,
                             operator: 'eq',
                             value: filtersTobeApplied[i].filters[j],
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: filtersTobeApplied[i].filters[j] + ',%',
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: '%, ' + filtersTobeApplied[i].filters[j],
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterCondition.and.push(JSON.parse(JSON.stringify({
                             or: filterJSON
@@ -487,25 +488,25 @@ function smartfilter() {
                             field: filtersTobeApplied[i].field,
                             operator: 'eq',
                             value: filtersTobeApplied[i].filters[i],
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: filtersTobeApplied[i].filters[j] + ',%',
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: '%, ' + filtersTobeApplied[i].filters[j],
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterJSON.push({
                             field: filtersTobeApplied[i].field,
                             operator: 'match',
                             value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
-                        encloseField: false
+                            encloseField: filtersTobeApplied[i].encloseField
                         });
                         filterCondition.and[filterCondition.and.length - 1].or.push({
                             or: filterJSON
@@ -533,7 +534,8 @@ function smartfilter() {
     function staticFilter(filters, cb) {
         staticFilters = filters;
         for (var i = 0; i < staticFilters.length; i++) {
-            staticFilters[i].filters = staticFilters[i].filters.sort();
+            if(staticFilters[i].filters != undefined)
+                staticFilters[i].filters = staticFilters[i].filters.sort();
         }
         flushCache(cb);
         // executePivots(0, null, cb);
