@@ -68,7 +68,7 @@ function smartfilter() {
             }
         }
 
-        createToExternalDatabasePivot(query, function (data, isCachedResult) {
+        createToExternalDatabasePivot(query, function(data, isCachedResult) {
             cb(data);
             data = null;
         });
@@ -89,7 +89,7 @@ function smartfilter() {
             encloseField: false
         });
 
-        createToExternalDatabasePivot(query, function (data, isCachedResult) {
+        createToExternalDatabasePivot(query, function(data, isCachedResult) {
             cb(data);
             data = null;
         });
@@ -130,7 +130,7 @@ function smartfilter() {
     function executePivots(addReduceNone, dimension, cb, reference) {
         if (debug)
             console.log('executePivots', dimension);
-        getAllPivotResults(0, addReduceNone, dimension, reference, function (data) {
+        getAllPivotResults(0, addReduceNone, dimension, reference, function(data) {
             if (debug)
                 console.log('executePivots', dimension, Object.keys(data.data));
             cb(data);
@@ -295,7 +295,7 @@ function smartfilter() {
             var measures = output.measures;
             var i = index;
             var startTime = new Date();
-            createToExternalDatabasePivot(query, function (data, isCachedResult) {
+            createToExternalDatabasePivot(query, function(data, isCachedResult) {
                 if (debug) {
                     console.log(data.length + ' rows Returned for dimensions \'' + pivotMap[i].dimensions + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db') + '. addReduceNone: ' + addReduceNone);
                 }
@@ -328,7 +328,7 @@ function smartfilter() {
                         }
                     }
                 }
-                    //remove from existing
+                //remove from existing
                 else if (addReduceNone === 2) {
                     for (var j = 0; j < data.length; j++) {
                         var pivotMapDimensionKey = [];
@@ -359,7 +359,7 @@ function smartfilter() {
                         }
                     }
                 }
-                    //replace entire result
+                //replace entire result
                 else {
                     pivotListResult[pivotMap[i].reference] = data;
                     pivotListFilters[pivotMap[i].reference] = [query.filter];
@@ -378,7 +378,7 @@ function smartfilter() {
                         pivotListResultKey[pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
                     }
                 }
-                setTimeout(function () {
+                setTimeout(function() {
                     getAllPivotResults(index + 1, addReduceNone, dimension, reference, cb);
                 }, 1);
             });
@@ -420,7 +420,7 @@ function smartfilter() {
                     filterType: filteredDimension[filterList[i]].filterType,
                     field: filterList[i],
                     filters: filteredDimension[filterList[i]].filters,
-					encloseField: filteredDimension[filterList[i]].encloseField
+                    encloseField: filteredDimension[filterList[i]].encloseField
                 });
             }
         }
@@ -534,7 +534,7 @@ function smartfilter() {
     function staticFilter(filters, cb) {
         staticFilters = filters;
         for (var i = 0; i < staticFilters.length; i++) {
-            if(staticFilters[i].filters != undefined)
+            if (staticFilters[i].filters != undefined)
                 staticFilters[i].filters = staticFilters[i].filters.sort();
         }
         flushCache(cb);
@@ -545,21 +545,21 @@ function smartfilter() {
         if (values.length > 0 && typeof values != "string") {
             //numeric type
             if (isFinite(+values[0])) {
-                values = values.sort(function (a, b) {
+                values = values.sort(function(a, b) {
                     return +a - +b;
                 });
             }
-                //date type
+            //date type
             else if ((new Date(values[0])).getTime() != 0) {
-                values = values.sort(function (a, b) {
+                values = values.sort(function(a, b) {
                     return (new Date(a)).getTime() - (new Date(b)).getTime();
                 });
             }
-                // string types
+            // string types
             else if (typeof values[0] == 'string') {
                 values = values.sort();
             }
-                //other types
+            //other types
             else {
                 // do nothing
             }
@@ -597,14 +597,14 @@ function smartfilter() {
                                 newCondition[1] = +values[1];
                                 addReduceNone = 1;
                             }
-                                //reduced
+                            //reduced
                             else {
                                 newCondition[0] = +values[1] + 0.0000000001;
                                 newCondition[1] = +existingCondition[1];
                                 addReduceNone = 2;
                             }
                         }
-                            //date type
+                        //date type
                         else if ((new Date(existingCondition[1])).getTime() != 0) {
                             // added
                             if (new Date(existingCondition[1]) <= new Date(values[1])) {
@@ -620,7 +620,7 @@ function smartfilter() {
                                 newCondition[1] = values[1];
                                 addReduceNone = 1;
                             }
-                                //reduced
+                            //reduced
                             else {
                                 var dt = new Date(values[1]);
                                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
@@ -637,13 +637,13 @@ function smartfilter() {
                                 addReduceNone = 2;
                             }
                         }
-                            //other type
+                        //other type
                         else {
                             newCondition[0] = values[0];
                             newCondition[1] = values[1];
                         }
                     }
-                        //right is same
+                    //right is same
                     else if (existingCondition.length === 2 && existingCondition[1] === values[1]) {
                         //number type
                         if (isFinite(+existingCondition[0])) {
@@ -653,14 +653,14 @@ function smartfilter() {
                                 newCondition[1] = +existingCondition[0] - 0.0000000001;
                                 addReduceNone = 1;
                             }
-                                //reduced
+                            //reduced
                             else {
                                 newCondition[0] = +existingCondition[0];
                                 newCondition[1] = +values[0] - 0.0000000001;
                                 addReduceNone = 2;
                             }
                         }
-                            //date type
+                        //date type
                         else if ((new Date(existingCondition[0])).getTime() != 0) {
                             if (new Date(values[0]) <= new Date(existingCondition[0])) {
                                 newCondition[0] = values[0];
@@ -688,13 +688,13 @@ function smartfilter() {
                                 addReduceNone = 2;
                             }
                         }
-                            //other type
+                        //other type
                         else {
                             newCondition[0] = values[0];
                             newCondition[1] = values[1];
                         }
                     }
-                        //nothing is same
+                    //nothing is same
                     else {
                         newCondition[0] = values[0];
                         newCondition[1] = values[1];
@@ -740,7 +740,7 @@ function smartfilter() {
                             addReduceNone = 0;
                         }
                     }
-                        //most likely added some values
+                    //most likely added some values
                     else {
                         //all existing values should be part of new values
                         var allExistingValuesFound = true;
@@ -783,7 +783,7 @@ function smartfilter() {
             if (debug)
                 console.log(['existingCondition', existingCondition, values, newCondition, addReduceNone]);
         }
-        executePivots(addReduceNone, dimension, function (data) {
+        executePivots(addReduceNone, dimension, function(data) {
             filteredDimension[dimension].filters = values;
             updateOldResults(data, dimension, cb);
             //cb(data);
@@ -809,7 +809,7 @@ function smartfilter() {
         var connectionIdentifier = require('node-database-connectors');
         dbConfig = config;
         objConnection = connectionIdentifier.identify(dbConfig);
-        objConnection.connect(dbConfig, function (err, c) {
+        objConnection.connect(dbConfig, function(err, c) {
             if (err) {
                 cReq.cb({
                     type: 'error',
@@ -844,7 +844,8 @@ function smartfilter() {
         //                return;
         //            }
         //        }
-        cConn.query(queryString, function (err, rows, fields) {
+        // cConn.query(queryString, function (err, rows, fields) {
+        objConnection.execQuery(queryString, cConn, function(err, rows, fields) {
             if (err) {
                 cReq.cb({
                     type: 'error',
@@ -872,12 +873,12 @@ function smartfilter() {
             if (debug)
                 console.log('processing request:', cReq);
             if (cReq.type.toLowerCase() === "connect") {
-                connect(cReq.data.tableName, cReq.data.dbConfig, function (data) {
+                connect(cReq.data.tableName, cReq.data.dbConfig, function(data) {
                     processRequestRunning = false;
                     processRequestStack();
                 });
             } else if (cReq.type.toLowerCase() === "filter") {
-                filter(cReq.data.filterType, cReq.data.field, cReq.data.filters, function (data) {
+                filter(cReq.data.filterType, cReq.data.field, cReq.data.filters, function(data) {
                     data.type = 'data';
                     if (cReq.data.reference) {
                         data.reference = cReq.data.reference;
@@ -887,7 +888,7 @@ function smartfilter() {
                     processRequestStack();
                 });
             } else if (cReq.type.toLowerCase() === "staticfilter") {
-                staticFilter(cReq.data, function (data) {
+                staticFilter(cReq.data, function(data) {
                     data.type = 'data';
                     if (cReq.data.reference) {
                         data.reference = cReq.data.reference;
@@ -899,7 +900,7 @@ function smartfilter() {
             } else if (cReq.type.toLowerCase() === "data") {
                 var from, to;
                 if (cReq.data == undefined) {
-                    getData(function (data) {
+                    getData(function(data) {
                         cReq.cb({
                             type: 'records',
                             data: data
@@ -908,7 +909,7 @@ function smartfilter() {
                         processRequestStack();
                     });
                 } else if (cReq.data.from == undefined) {
-                    getData(function (data) {
+                    getData(function(data) {
                         cReq.cb({
                             type: 'records',
                             data: data
@@ -917,7 +918,7 @@ function smartfilter() {
                         processRequestStack();
                     }, cReq.data.field);
                 } else if (cReq.data.to == undefined) {
-                    getData(cReq.data.from, function (data) {
+                    getData(cReq.data.from, function(data) {
                         cReq.cb({
                             type: 'records',
                             data: data
@@ -926,7 +927,7 @@ function smartfilter() {
                         processRequestStack();
                     }, cReq.data.field);
                 } else {
-                    getData(cReq.data.from, cReq.data.to, function (data) {
+                    getData(cReq.data.from, cReq.data.to, function(data) {
                         cReq.cb({
                             type: 'records',
                             data: data
@@ -936,7 +937,7 @@ function smartfilter() {
                     }, cReq.data.field);
                 }
             } else if (cReq.type.toLowerCase() === "count") {
-                getCount(function (data) {
+                getCount(function(data) {
                     cReq.cb({
                         type: 'count',
                         data: data
@@ -953,7 +954,7 @@ function smartfilter() {
                     processRequestRunning = false;
                     processRequestStack();
                 } else {
-                    removePivot(cReq.data.reference, function (data) {
+                    removePivot(cReq.data.reference, function(data) {
                         cReq.cb({
                             type: 'data',
                             data: data
@@ -971,7 +972,7 @@ function smartfilter() {
                     processRequestRunning = false;
                     processRequestStack();
                 } else {
-                    pivot(cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, function (data) {
+                    pivot(cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, function(data) {
                         data.type = 'data';
                         cReq.cb(data);
                         processRequestRunning = false;
@@ -980,7 +981,7 @@ function smartfilter() {
                 }
             } else if (cReq.type.toLowerCase() === "flushcache") {
                 //executePivots(0, null, cb);
-                flushCache(function (data) {
+                flushCache(function(data) {
                     data.type = 'data';
                     cReq.cb(data);
                     processRequestRunning = false;
@@ -996,7 +997,7 @@ function smartfilter() {
         }
     }
 
-    this.smartfilterRequest = function (m, cb) {
+    this.smartfilterRequest = function(m, cb) {
 
         m.cb = cb;
         myRequestStack.push(m);
