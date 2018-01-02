@@ -12,7 +12,11 @@
     "Smartfilter"
   ],
   "dependencies": {
-    "node-database-connectors": "*"
+    "axiom-utils": "^1.0.5",
+    "d3": "^4.12.2",
+    "easy-zip": "0.0.4",
+    "node-database-connectors": "*",
+    "node-database-executor": "1.0.9"
   },
   "author": "Darshit Shah",
   "bugs": {
