@@ -40,7 +40,6 @@ function smartfilter() {
   }
 
   function getData(from, to, cb, field, instance) {
-
     if (typeof from === 'function') {
       cb = from;
       to = undefined;
@@ -62,7 +61,14 @@ function smartfilter() {
     }
     query.select = [];
     if (field != undefined) {
+      if (typeof field == 'string') {
+        field = [field];
+      }
       for (var i = 0; i < field.length; i++) {
+        console.log(field)
+        if (typeof field[i] == 'string') {
+          field[i] = { key: field[i] };
+        }
         if (field[i].alias == undefined) {
           field[i].alias = field[i].key;
         }
@@ -444,6 +450,7 @@ function smartfilter() {
   }
 
   function createPivotWhereCondition(index, instance) {
+    console.log(InstanceMap[instance], instance, "create pivot condition---------------")
     var filterList = Object.keys(InstanceMap[instance].filteredDimension);
     var filterCondition = {
       and: []
@@ -956,16 +963,16 @@ function smartfilter() {
       } else if (cReq.type.toLowerCase() === "data") {
         var from, to;
         if (cReq.data == undefined) {
-          getData(instance, function(data) {
+          getData(undefined, undefined, function(data) {
             cReq.cb({
               type: 'records',
               data: data
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.instanceReference);
+          }, undefined, cReq.instanceReference);
         } else if (cReq.data.from == undefined) {
-          getData(function(data) {
+          getData(undefined, undefined, function(data) {
             cReq.cb({
               type: 'records',
               data: data
@@ -974,7 +981,7 @@ function smartfilter() {
             processRequestStack();
           }, cReq.data.field, cReq.instanceReference);
         } else if (cReq.data.to == undefined) {
-          getData(cReq.data.from, function(data) {
+          getData(cReq.data.from, undefined, function(data) {
             cReq.cb({
               type: 'records',
               data: data
