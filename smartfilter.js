@@ -65,7 +65,7 @@ function smartfilter() {
         field = [field];
       }
       for (var i = 0; i < field.length; i++) {
-        console.log(field)
+        //console.log(field)
         if (typeof field[i] == 'string') {
           field[i] = { key: field[i] };
         }
@@ -450,7 +450,7 @@ function smartfilter() {
   }
 
   function createPivotWhereCondition(index, instance) {
-    console.log(InstanceMap[instance], instance, "create pivot condition---------------")
+    //console.log(InstanceMap[instance], instance, "create pivot condition---------------")
     var filterList = Object.keys(InstanceMap[instance].filteredDimension);
     var filterCondition = {
       and: []
