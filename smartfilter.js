@@ -65,7 +65,7 @@ function smartfilter() {
         field = [field];
       }
       for (var i = 0; i < field.length; i++) {
-        console.log(field)
+        //console.log(field)
         if (typeof field[i] == 'string') {
           field[i] = { key: field[i] };
         }
@@ -372,7 +372,7 @@ function smartfilter() {
             for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
               if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
-              } else if (typeof pivotMap[index].dimensions[n].alias != undefined) {
+              } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
               } else {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
@@ -450,7 +450,7 @@ function smartfilter() {
   }
 
   function createPivotWhereCondition(index, instance) {
-    console.log(InstanceMap[instance], instance, "create pivot condition---------------")
+    //console.log(InstanceMap[instance], instance, "create pivot condition---------------")
     var filterList = Object.keys(InstanceMap[instance].filteredDimension);
     var filterCondition = {
       and: []
