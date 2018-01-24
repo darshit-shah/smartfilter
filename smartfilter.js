@@ -372,7 +372,7 @@ function smartfilter() {
             for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
               if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
-              } else if (typeof pivotMap[index].dimensions[n].alias != undefined) {
+              } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
               } else {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
