@@ -39,7 +39,17 @@ function smartfilter() {
     executePivots(instance, 0, null, cb);
   }
 
-  function getData(from, to, cb, field, instance) {
+
+  /**
+   * [getData description]
+   * @param  {Number | Function}   from     [description]
+   * @param  {Number | Function}   to       [description]
+   * @param  {Function} cb       [description]
+   * @param  {String}   field    [description]
+   * @param  {String}   instance [description]
+   * @param  {Array}   sort     expects  keys field and/or order (refer node-db-connectors for syntax)
+   */
+  function getData(from, to, cb, field, instance, sortBy) {
     if (typeof from === 'function') {
       cb = from;
       to = undefined;
@@ -77,6 +87,9 @@ function smartfilter() {
           alias: field[i].alias
         });
       }
+    }
+    if (sortBy != undefined && Array.isArray(sortBy) && sortBy.length > 0) {
+      query.sortby = sortBy
     }
     var tableName = InstanceMap[instance].tableName;
     var dbConfig = InstanceMap[instance].dbConfig;
@@ -529,7 +542,7 @@ function smartfilter() {
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'eq',
-              value: filtersTobeApplied[i].filters[i],
+              value: filtersTobeApplied[i].filters[j],
               encloseField: filtersTobeApplied[i].encloseField
             });
             filterJSON.push({
@@ -970,7 +983,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, undefined, cReq.instanceReference);
+          }, undefined, cReq.instanceReference,cReq.data.sortBy);
         } else if (cReq.data.from == undefined) {
           getData(undefined, undefined, function(data) {
             cReq.cb({
@@ -979,7 +992,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference);
+          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
         } else if (cReq.data.to == undefined) {
           getData(cReq.data.from, undefined, function(data) {
             cReq.cb({
@@ -988,7 +1001,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference);
+          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
         } else {
           getData(cReq.data.from, cReq.data.to, function(data) {
             cReq.cb({
@@ -997,7 +1010,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference);
+          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
         }
       } else if (cReq.type.toLowerCase() === "count") {
         getCount(cReq.instanceReference, function(data) {
