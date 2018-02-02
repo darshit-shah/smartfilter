@@ -6,7 +6,7 @@ var utils = require('axiom-utils');
 // var queryExecutor = executionEngine;
 
 function smartfilter() {
-  var debug = true;
+  var debug = false;
   var forceOrderBy = false;
   var InstanceMap = {}
     // var tableName = "";
@@ -411,7 +411,7 @@ function smartfilter() {
         }
         //replace entire result
         else {
-          if (InstanceMap[instance].smartDecision) {
+          // if (InstanceMap[instance].smartDecision) {
 
 
             InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference] = data;
@@ -430,7 +430,7 @@ function smartfilter() {
               }
               InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
             }
-          }
+          // }
         }
         setTimeout(function() {
           getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
@@ -519,13 +519,13 @@ function smartfilter() {
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'match',
-              value: '%, ' + filtersTobeApplied[i].filters[j],
+              value: '%,' + filtersTobeApplied[i].filters[j],
               encloseField: filtersTobeApplied[i].encloseField
             });
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'match',
-              value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
+              value: '%,' + filtersTobeApplied[i].filters[j] + ',%',
               encloseField: filtersTobeApplied[i].encloseField
             });
             filterCondition.and.push(JSON.parse(JSON.stringify({
@@ -554,13 +554,13 @@ function smartfilter() {
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'match',
-              value: '%, ' + filtersTobeApplied[i].filters[j],
+              value: '%,' + filtersTobeApplied[i].filters[j],
               encloseField: filtersTobeApplied[i].encloseField
             });
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'match',
-              value: '%, ' + filtersTobeApplied[i].filters[j] + ',%',
+              value: '%,' + filtersTobeApplied[i].filters[j] + ',%',
               encloseField: filtersTobeApplied[i].encloseField
             });
             filterCondition.and[filterCondition.and.length - 1].or.push({
@@ -891,8 +891,8 @@ function smartfilter() {
       pivotListFilters: {},
       pivotListResultKey: {},
       oldFilterConditions: [],
-      smartDecision: true,
-      shouldCacheResults: true,
+      smartDecision: false,
+      shouldCacheResults: false,
       tableName: tblName,
       dbConfig: config,
       pivotMap: [],
