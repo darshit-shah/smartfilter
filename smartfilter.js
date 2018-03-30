@@ -123,7 +123,7 @@ function smartfilter() {
     });
   }
 
-  function pivot(instance, reference, dimensions, measures, allResults, cb) {
+  function pivot(instance, reference, dimensions, measures, allResults, sortBy, cb) {
     if (!InstanceMap.hasOwnProperty(instance)) {
       cb({ type: 'error', error: { message: 'InstanceRefernce not found' } })
 
@@ -132,7 +132,8 @@ function smartfilter() {
       InstanceMap[instance].pivotMap.push({
         reference: reference,
         dimensions: dimensions,
-        measures: measures
+        measures: measures,
+        sortBy: sortBy
       });
 
 
@@ -315,6 +316,23 @@ function smartfilter() {
         }
       }
     }
+    var sortBy = InstanceMap[instance].pivotMap[index].sortBy;
+    if (sortBy != undefined && sortBy.length > 0) {
+      query.sortby = query.hasOwnProperty('sortby') ? query.sortby : [];
+
+      if (typeof InstanceMap[instance].pivotMap[index].sortBy === "string") {
+        InstanceMap[instance].pivotMap[index].sortBy = InstanceMap[instance].pivotMap[index].sortBy.split(",")
+      }  
+      if (Array.isArray(InstanceMap[instance].pivotMap[index].sortBy)) {
+        InstanceMap[instance].pivotMap[index].sortBy.forEach(function(e, i) {
+          query.sortby.push({
+            field: typeof e == "string" ? e : e.field,
+            order: typeof e == "string" ? 'asc' : e.order,
+            encloseField:e == "string" ? undefined:e.encloseField
+          })
+        });
+      }
+    }
     if (filterCondition !== undefined) {
       query.filter = filterCondition;
     }
@@ -414,22 +432,22 @@ function smartfilter() {
           // if (InstanceMap[instance].smartDecision) {
 
 
-            InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference] = data;
-            InstanceMap[instance].pivotListFilters[InstanceMap[instance].pivotMap[i].reference] = [query.filter];
-            InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference] = [];
-            for (var j = 0; j < data.length; j++) {
-              var pivotMapDimensionKey = [];
-              for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
-                if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
-                  pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
-                } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
-                  pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
-                } else {
-                  pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
-                }
+          InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference] = data;
+          InstanceMap[instance].pivotListFilters[InstanceMap[instance].pivotMap[i].reference] = [query.filter];
+          InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference] = [];
+          for (var j = 0; j < data.length; j++) {
+            var pivotMapDimensionKey = [];
+            for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
+              if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
+                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
+              } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
+                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
+              } else {
+                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
               }
-              InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
             }
+            InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
+          }
           // }
         }
         setTimeout(function() {
@@ -983,7 +1001,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, undefined, cReq.instanceReference,cReq.data.sortBy);
+          }, undefined, cReq.instanceReference, cReq.data.sortBy);
         } else if (cReq.data.from == undefined) {
           getData(undefined, undefined, function(data) {
             cReq.cb({
@@ -992,7 +1010,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
+          }, cReq.data.field, cReq.instanceReference, cReq.data.sortBy);
         } else if (cReq.data.to == undefined) {
           getData(cReq.data.from, undefined, function(data) {
             cReq.cb({
@@ -1001,7 +1019,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
+          }, cReq.data.field, cReq.instanceReference, cReq.data.sortBy);
         } else {
           getData(cReq.data.from, cReq.data.to, function(data) {
             cReq.cb({
@@ -1010,7 +1028,7 @@ function smartfilter() {
             });
             processRequestRunning = false;
             processRequestStack();
-          }, cReq.data.field, cReq.instanceReference,cReq.data.sortBy);
+          }, cReq.data.field, cReq.instanceReference, cReq.data.sortBy);
         }
       } else if (cReq.type.toLowerCase() === "count") {
         getCount(cReq.instanceReference, function(data) {
@@ -1048,7 +1066,7 @@ function smartfilter() {
           processRequestRunning = false;
           processRequestStack();
         } else {
-          pivot(cReq.instanceReference, cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, function(data) {
+          pivot(cReq.instanceReference, cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, cReq.data.sortBy, function(data) {
             data.type = 'data';
             cReq.cb(data);
             processRequestRunning = false;
