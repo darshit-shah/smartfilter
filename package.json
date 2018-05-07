@@ -12,7 +12,7 @@
     "Smartfilter"
   ],
   "dependencies": {
-    "axiom-utils": "1.0.5",
+    "axiom-utils": "*",
     "d3": "4.12.2",
     "easy-zip": "0.0.4",
     "node-database-connectors": "*",
@@ -30,5 +30,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "description": "This is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.",
-  "version": "1.0.5"
+  "version": "1.0.6"
 }
