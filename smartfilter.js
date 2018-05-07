@@ -23,6 +23,7 @@ function smartfilter() {
   var myRequestStack = [];
   var processRequestRunning = false;
   var cReq = null;
+  var lastError = null;
   // var smartDecision = true;
   // var dbConfig = undefined;
   // var objConnection = undefined;
@@ -608,7 +609,10 @@ function smartfilter() {
       shouldCache: shouldCacheResults
     }, function(output) {
       if (output.status == false) {
-        cReq.cb({ type: 'error', data: output })
+        cReq.cb({ type: 'error', data: output });
+        lastError = output;
+        processRequestRunning = false;
+        processRequestStack();
       } else {
         cb(JSON.parse(JSON.stringify(output.content)), false);
 
@@ -1101,6 +1105,13 @@ function smartfilter() {
 
       }
       myRequestStack.push(m);
+      if(debug){
+        console.log("myRequestStack.length", myRequestStack.length)
+        console.log("processRequestRunning", processRequestRunning)
+        if(cReq)
+          console.log("cReq", JSON.stringify(cReq.type,null,2), JSON.stringify(cReq.data,null,2));
+        console.log("lastError", lastError);
+      }
       if (processRequestRunning === false) {
         processRequestStack();
       }
