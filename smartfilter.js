@@ -1,41 +1,19 @@
 "use strict";
 var executionEngine = require('node-database-executor');
-// var executionEngine = require('/home/shailee/byte_modules/forked/node-database-executor/DatabaseExecutor.js');
-// var executionEngine = require('./queryExecutionEngine');
 var utils = require('axiom-utils');
-// var queryExecutor = executionEngine;
 
 function smartfilter() {
   var debug = false;
   var forceOrderBy = false;
   var InstanceMap = {}
-    // var tableName = "";
-    // var staticFilters = [];
-    // var filteredDimension = {};
-
-  // var pivotListResult = {};
-  // var pivotListFilters = {};
-  // var pivotListResultKey = {};
-
-  // var oldResults = {};
-  // var oldFilterConditions = [];
-
   var myRequestStack = [];
   var processRequestRunning = false;
   var cReq = null;
   var lastError = null;
-  // var smartDecision = true;
-  // var dbConfig = undefined;
-  // var objConnection = undefined;
-  // var cConn = undefined;
-
-  // var pivotMap = [];
 
   function flushCache(instance, cb) { // 
-    // oldResults = {};
-    var keys = Object.keys(InstanceMap[instance].filteredDimension);
-    for (var i = 0; i < keys.length; i++) {
-      InstanceMap[instance].filteredDimension[keys[i]].filters = [];
+    if (InstanceMap[instance].shouldCacheResults) {
+      executionEngine.flushCache(InstanceMap[instance].dbConfig, InstanceMap[instance].tableName);
     }
     executePivots(instance, 0, null, cb);
   }
@@ -176,7 +154,6 @@ function smartfilter() {
     getAllPivotResults(0, addReduceNone, dimension, reference, instance, function(data) {
       if (debug)
         console.log('executePivots', dimension, Object.keys(data.data));
-
       // console.log("******** PivotMap *********", JSON.stringify(InstanceMap[instance].pivotMap))
       // console.log("******** filteredDimension *********", JSON.stringify(InstanceMap[instance].filteredDimension))
       // console.log("******** pivotListResult *********", JSON.stringify(InstanceMap[instance].pivotListResult))
@@ -323,13 +300,13 @@ function smartfilter() {
 
       if (typeof InstanceMap[instance].pivotMap[index].sortBy === "string") {
         InstanceMap[instance].pivotMap[index].sortBy = InstanceMap[instance].pivotMap[index].sortBy.split(",")
-      }  
+      }
       if (Array.isArray(InstanceMap[instance].pivotMap[index].sortBy)) {
         InstanceMap[instance].pivotMap[index].sortBy.forEach(function(e, i) {
           query.sortby.push({
             field: typeof e == "string" ? e : e.field,
             order: typeof e == "string" ? 'asc' : e.order,
-            encloseField:e == "string" ? undefined:e.encloseField
+            encloseField: e == "string" ? undefined : e.encloseField
           })
         });
       }
@@ -606,7 +583,7 @@ function smartfilter() {
     executionEngine.executeQuery({
       query: query,
       dbConfig: dbConfig,
-      shouldCache: shouldCacheResults
+      shouldCache: shouldCacheResults,
     }, function(output) {
       if (output.status == false) {
         cReq.cb({ type: 'error', data: output });
@@ -626,8 +603,12 @@ function smartfilter() {
       if (InstanceMap[instance].staticFilters[i].filters != undefined)
         InstanceMap[instance].staticFilters[i].filters = InstanceMap[instance].staticFilters[i].filters.sort();
     }
-    flushCache(instance, cb);
-    // executePivots(0, null, cb);
+    var keys = Object.keys(InstanceMap[instance].filteredDimension);
+    for (var i = 0; i < keys.length; i++) {
+      InstanceMap[instance].filteredDimension[keys[i]].filters = [];
+    }
+    executePivots(instance, 0, null, cb);
+    // flushCache(instance, cb);
   }
 
   function filter(filterType, dimension, values, instance, cb) {
@@ -903,7 +884,7 @@ function smartfilter() {
 
 
 
-  function connect(tblName, config, cb) {
+  function connect(tblName, config, smartDecision, shouldCacheResults, cb) {
 
     var ref = utils.uuid();
     InstanceMap[ref] = {
@@ -913,8 +894,8 @@ function smartfilter() {
       pivotListFilters: {},
       pivotListResultKey: {},
       oldFilterConditions: [],
-      smartDecision: false,
-      shouldCacheResults: false,
+      smartDecision: smartDecision,
+      shouldCacheResults: shouldCacheResults,
       tableName: tblName,
       dbConfig: config,
       pivotMap: [],
@@ -923,43 +904,6 @@ function smartfilter() {
 
   }
 
-  // function queryExecutor(query, cb) {
-
-  //     if (debug)
-  //         console.log('query', JSON.stringify(query));
-  //     var queryString = objConnection.prepareQuery(query);
-  //     if (debug)
-  //         console.log('queryString:\n', queryString);
-
-  //     if (oldResults[queryString] != undefined) {
-  //         cb(JSON.parse(JSON.stringify(oldResults[queryString].result)), true);
-  //         return;
-  //     }
-  //     //        for (var i = 0; i < oldResults.length; i++) {
-  //     //            if (oldResults[i].query === queryString) {
-  //     //                cb(JSON.parse(JSON.stringify(oldResults[i].result)), true);
-  //     //                return;
-  //     //            }
-  //     //        }
-  //     // cConn.query(queryString, function (err, rows, fields) {
-  //     objConnection.execQuery(queryString, cConn, function(err, rows, fields) {
-  //         if (err) {
-  //             cReq.cb({
-  //                 type: 'error',
-  //                 data: err
-  //             });
-  //         } else {
-  //             //oldResults.push({ query: queryString, result: JSON.parse(JSON.stringify(rows)) });
-  //             oldResults[queryString] = {
-  //                 result: JSON.parse(JSON.stringify(rows))
-  //             };
-  //             cb(JSON.parse(JSON.stringify(rows)), false);
-  //         }
-  //         err = null;
-  //         rows = null;
-  //         fields = null;
-  //     });
-  // }
 
   function processRequestStack() {
 
@@ -970,7 +914,8 @@ function smartfilter() {
       if (debug)
         console.log('processing request:', cReq);
       if (cReq.type.toLowerCase() === "connect") {
-        connect(cReq.data.tableName, cReq.data.dbConfig, function(data) {
+
+        connect(cReq.data.tableName, cReq.data.dbConfig, cReq.makeSmartDecision, cReq.shouldCacheResults, function(data) {
           cReq.cb(data)
           processRequestRunning = false;
           processRequestStack();
@@ -1099,17 +1044,12 @@ function smartfilter() {
     m.cb = cb;
     if (m.hasOwnProperty('instanceReference') || m.type == 'connect') {
 
-      if (m.type != 'connect') {
-        InstanceMap[m.instanceReference]['smartDecision'] = m.hasOwnProperty('makeSmartDecision') ? m.makeSmartDecision : InstanceMap[m.instanceReference]['smartDecision'];
-        InstanceMap[m.instanceReference].cacheResults = m.hasOwnProperty('shouldCacheResults') ? m.shouldCacheResults : InstanceMap[m.instanceReference].cacheResults;
-
-      }
       myRequestStack.push(m);
-      if(debug){
+      if (debug) {
         console.log("myRequestStack.length", myRequestStack.length)
         console.log("processRequestRunning", processRequestRunning)
-        if(cReq)
-          console.log("cReq", JSON.stringify(cReq.type,null,2), JSON.stringify(cReq.data,null,2));
+        if (cReq)
+          console.log("cReq", JSON.stringify(cReq.type, null, 2), JSON.stringify(cReq.data, null, 2));
         console.log("lastError", lastError);
       }
       if (processRequestRunning === false) {
