@@ -1,6 +1,7 @@
 "use strict";
 var executionEngine = require('node-database-executor');
 var utils = require('axiom-utils');
+var async = require('async');
 
 function smartfilter() {
   var debug = false;
@@ -1015,12 +1016,25 @@ function smartfilter() {
           processRequestRunning = false;
           processRequestStack();
         } else {
-          pivot(cReq.instanceReference, cReq.data.reference, cReq.data.dimensions, cReq.data.measures, cReq.data.allResults, cReq.data.sortBy, function(data) {
-            data.type = 'data';
-            cReq.cb(data);
+          var cReqs = [cReq];
+          var start=true;
+          while(myRequestStack.length>0){
+            if(myRequestStack[0].type.toLowerCase() === 'pivot'){
+              cReqs.push(myRequestStack.shift());
+            } else {
+              break;
+            }
+          }
+          async.eachLimit(cReqs,5,function(cReqLocal, callback){
+            pivot(cReqLocal.instanceReference, cReqLocal.data.reference, cReqLocal.data.dimensions, cReqLocal.data.measures, cReqLocal.data.allResults, cReqLocal.data.sortBy, function(data) {
+              data.type = 'data';
+              cReqLocal.cb(data);
+              callback(null, null);
+            });
+          },function(err,results){
             processRequestRunning = false;
             processRequestStack();
-          });
+          })
         }
       } else if (cReq.type.toLowerCase() === "flushcache") {
         //executePivots(0, null, cb);
