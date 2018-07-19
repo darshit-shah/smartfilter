@@ -349,7 +349,7 @@ function smartfilter() {
 
 
         //add to existing
-        if (addReduceNone === 1) {
+        if (InstanceMap[instance].smartDecision && addReduceNone === 1) {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
             for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
@@ -376,7 +376,7 @@ function smartfilter() {
           }
         }
         //remove from existing
-        else if (addReduceNone === 2) {
+        else if (InstanceMap[instance].smartDecision && addReduceNone === 2) {
           for (var j = 0; j < data.length; j++) {
             var pivotMapDimensionKey = [];
             for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
@@ -409,24 +409,22 @@ function smartfilter() {
         //replace entire result
         else {
           // if (InstanceMap[instance].smartDecision) {
-
-
           InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference] = data;
           InstanceMap[instance].pivotListFilters[InstanceMap[instance].pivotMap[i].reference] = [query.filter];
-          InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference] = [];
-          for (var j = 0; j < data.length; j++) {
-            var pivotMapDimensionKey = [];
-            for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
-              if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
-                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
-              } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
-                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
-              } else {
-                pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
-              }
-            }
-            InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
-          }
+          // InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference] = [];
+          // for (var j = 0; j < data.length; j++) {
+          //   var pivotMapDimensionKey = [];
+          //   for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
+          //     if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
+          //       pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
+          //     } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
+          //       pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].alias]);
+          //     } else {
+          //       pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
+          //     }
+          //   }
+          //   InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
+          // }
           // }
         }
         setTimeout(function() {
@@ -456,6 +454,16 @@ function smartfilter() {
         cb(json);
         json = null;
       }
+      if(!InstanceMap[instance].shouldCacheResults){
+        if(reference == undefined){
+          InstanceMap[instance].pivotListResult = [];
+          InstanceMap[instance].pivotListResult = null;
+        }
+        InstanceMap[instance].pivotListResult[reference] = [];
+        InstanceMap[instance].pivotListResult[reference] = null;
+        delete InstanceMap[instance].pivotListResult[reference];
+      }
+      InstanceMap[instance].pivotListResult
     }
   }
 
@@ -593,7 +601,8 @@ function smartfilter() {
         processRequestStack();
       } else {
         cb(JSON.parse(JSON.stringify(output.content)), false);
-
+        output.content = [];
+        delete output.content;
       }
     });
   }
@@ -654,8 +663,6 @@ function smartfilter() {
       }
       executePivots(instance, InstanceMap[instance].smartDecision ? addReduceNone : 0, dimension, function(data) {
         InstanceMap[instance].filteredDimension[dimension].filters = values;
-
-
         cb(data);
         data = null;
       });
