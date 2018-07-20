@@ -600,9 +600,7 @@ function smartfilter() {
         processRequestRunning = false;
         processRequestStack();
       } else {
-        cb(JSON.parse(JSON.stringify(output.content)), false);
-        output.content = [];
-        delete output.content;
+        cb(output.content, false);
       }
     });
   }
