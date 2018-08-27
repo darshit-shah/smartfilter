@@ -475,7 +475,9 @@ function smartfilter() {
           encloseField: InstanceMap[instance].filteredDimension[filterList[i]].encloseField
         });
       }
+
     }
+
     if (filtersTobeApplied.length > 0) {
       for (var i = 0; i < filtersTobeApplied.length; i++) {
         if (filtersTobeApplied[i].filterType === 'in') {
@@ -612,7 +614,7 @@ function smartfilter() {
     // flushCache(instance, cb);
   }
 
-  function filter(filterType, dimension, values, instance, cb) {
+  function filter(filterType, dimension, values, instance,encloseField ,cb) {
     if (values.length > 0 && typeof values != "string") {
       //numeric type
       if (isFinite(+values[0])) {
@@ -640,6 +642,7 @@ function smartfilter() {
       if (InstanceMap[instance].filteredDimension[dimension] === undefined) {
         InstanceMap[instance].filteredDimension[dimension] = {};
         InstanceMap[instance].filteredDimension[dimension].field = dimension;
+        InstanceMap[instance].filteredDimension[dimension].encloseField = encloseField;
         InstanceMap[instance].filteredDimension[dimension].filters = [];
       }
       InstanceMap[instance].filteredDimension[dimension].filterType = filterType;
@@ -922,7 +925,7 @@ function smartfilter() {
           processRequestStack();
         });
       } else if (cReq.type.toLowerCase() === "filter") {
-        filter(cReq.data.filterType, cReq.data.field, cReq.data.filters, cReq.instanceReference, function(data) {
+        filter(cReq.data.filterType, cReq.data.field, cReq.data.filters, cReq.instanceReference, cReq.data.encloseField,function(data) {
           data.type = 'data';
           if (cReq.data.reference) {
             data.reference = cReq.data.reference;
