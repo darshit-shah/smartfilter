@@ -341,7 +341,7 @@ function smartfilter() {
   }
 
   function getAllPivotResults(index, addReduceNone, dimension, reference, instance, cb) {
-    console.log("getAllPivotResults index",  index, "total length",InstanceMap[instance].pivotMap.length)
+    //console.log("getAllPivotResults index",  index, "total length",InstanceMap[instance].pivotMap.length)
     if (index < InstanceMap[instance].pivotMap.length) {
       if (InstanceMap[instance].pivotMap[index].dimensions.length === 1 && (InstanceMap[instance].pivotMap[index].dimensions[0] === dimension || InstanceMap[instance].pivotMap[index].dimensions[0].key === dimension)) {
         // getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
