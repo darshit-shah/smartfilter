@@ -152,17 +152,36 @@ function smartfilter() {
   function executePivots(instance, addReduceNone, dimension, cb, reference) {
     if (debug)
       console.log('executePivots', dimension);
-    getAllPivotResults(0, addReduceNone, dimension, reference, instance, function(data) {
-      if (debug)
-        console.log('executePivots', dimension, Object.keys(data.data));
-      // console.log("******** PivotMap *********", JSON.stringify(InstanceMap[instance].pivotMap))
-      // console.log("******** filteredDimension *********", JSON.stringify(InstanceMap[instance].filteredDimension))
-      // console.log("******** pivotListResult *********", JSON.stringify(InstanceMap[instance].pivotListResult))
-      // console.log("******** pivotListResultKey *********", JSON.stringify(InstanceMap[instance].pivotListResultKey))
-      // console.log("******** pivotListFilters *********", JSON.stringify(InstanceMap[instance].pivotListFilters))
-      cb(data);
-      data = null;
-    });
+
+    var indexes = InstanceMap[instance].pivotMap.map((d,i)=> i);
+    async.eachLimit(indexes,5,function(item, callback){
+      getAllPivotResults(item, addReduceNone, dimension, reference, instance, function(data) {
+        if (debug)
+          if(data)
+            console.log('executePivots', dimension, Object.keys(data.data));
+        // console.log("******** PivotMap *********", JSON.stringify(InstanceMap[instance].pivotMap))
+        // console.log("******** filteredDimension *********", JSON.stringify(InstanceMap[instance].filteredDimension))
+        // console.log("******** pivotListResult *********", JSON.stringify(InstanceMap[instance].pivotListResult))
+        // console.log("******** pivotListResultKey *********", JSON.stringify(InstanceMap[instance].pivotListResultKey))
+        // console.log("******** pivotListFilters *********", JSON.stringify(InstanceMap[instance].pivotListFilters))
+        // cb(data);
+        // data = null;
+        callback(null, null);
+      });
+    }, function(err, resData){
+      getAllPivotResults(InstanceMap[instance].pivotMap.length, addReduceNone, dimension, reference, instance, function(data) {
+        if (debug)
+          if(data)
+            console.log('executePivots', dimension, Object.keys(data.data));
+        // console.log("******** PivotMap *********", JSON.stringify(InstanceMap[instance].pivotMap))
+        // console.log("******** filteredDimension *********", JSON.stringify(InstanceMap[instance].filteredDimension))
+        // console.log("******** pivotListResult *********", JSON.stringify(InstanceMap[instance].pivotListResult))
+        // console.log("******** pivotListResultKey *********", JSON.stringify(InstanceMap[instance].pivotListResultKey))
+        // console.log("******** pivotListFilters *********", JSON.stringify(InstanceMap[instance].pivotListFilters))
+        cb(data);
+        data = null;
+      });
+    })
   }
 
   function prepareQueryJSON(instance, index, dimension) {
@@ -322,15 +341,17 @@ function smartfilter() {
   }
 
   function getAllPivotResults(index, addReduceNone, dimension, reference, instance, cb) {
-    // console.log(InstanceMap, instance)
+    console.log("getAllPivotResults index",  index, "total length",InstanceMap[instance].pivotMap.length)
     if (index < InstanceMap[instance].pivotMap.length) {
       if (InstanceMap[instance].pivotMap[index].dimensions.length === 1 && (InstanceMap[instance].pivotMap[index].dimensions[0] === dimension || InstanceMap[instance].pivotMap[index].dimensions[0].key === dimension)) {
-        getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+        // getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+        cb();
         return;
       }
 
       if (reference != undefined && reference != InstanceMap[instance].pivotMap[index].reference) {
-        getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+        // getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+        cb();
         return;
       }
 
@@ -428,7 +449,8 @@ function smartfilter() {
           // }
         }
         setTimeout(function() {
-          getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+          // getAllPivotResults(index + 1, addReduceNone, dimension, reference, instance, cb);
+          cb();
         }, 1);
       });
     } else {
