@@ -1,16 +1,17 @@
 "use strict";
-var executionEngine = require('node-database-executor');
-var utils = require('axiom-utils');
-var async = require('async');
+const executionEngine = require('node-database-executor');
+const utils = require('axiom-utils');
+const async = require('async');
 
 function smartfilter() {
-  var debug = false;
-  var forceOrderBy = false;
-  var InstanceMap = {}
-  var myRequestStack = [];
-  var processRequestRunning = false;
-  var cReq = null;
-  var lastError = null;
+  let cReq = null;
+  let debug = false;
+  let lastError = null;
+  let forceOrderBy = false;
+  let processRequestRunning = false;
+  const instance = this;
+  const InstanceMap = {}
+  const myRequestStack = [];
 
   function flushCache(instance, cb) { // 
     if (InstanceMap[instance].shouldCacheResults) {
@@ -40,9 +41,9 @@ function smartfilter() {
       from = 0;
     }
 
-    var filterCondition = createPivotWhereCondition(-1, instance);
+    const filterCondition = createPivotWhereCondition(-1, instance);
 
-    var query = {};
+    const query = {};
     if (filterCondition !== undefined) {
       query.filter = filterCondition;
     }
@@ -54,7 +55,7 @@ function smartfilter() {
       if (typeof field == 'string') {
         field = [field];
       }
-      for (var i = 0; i < field.length; i++) {
+      for (let i = 0; i < field.length; i++) {
         //console.log(field)
         if (typeof field[i] == 'string') {
           field[i] = { key: field[i] };
@@ -71,9 +72,9 @@ function smartfilter() {
     if (sortBy != undefined && Array.isArray(sortBy) && sortBy.length > 0) {
       query.sortby = sortBy
     }
-    var tableName = InstanceMap[instance].tableName;
-    var dbConfig = InstanceMap[instance].dbConfig;
-    var shouldCacheResults = InstanceMap[instance].shouldCacheResults;
+    const tableName = InstanceMap[instance].tableName;
+    const dbConfig = InstanceMap[instance].dbConfig;
+    const shouldCacheResults = InstanceMap[instance].shouldCacheResults;
     createToExternalDatabasePivot(dbConfig, tableName, shouldCacheResults, query, function(data, isCachedResult) {
       cb(data);
       data = null;
@@ -81,9 +82,9 @@ function smartfilter() {
   }
 
   function getCount(instance, cb) {
-    var filterCondition = createPivotWhereCondition(-1, instance);
+    const filterCondition = createPivotWhereCondition(-1, instance);
     // console.log([filterCondition]);
-    var query = {};
+    const query = {};
     if (filterCondition !== undefined) {
       query.filter = filterCondition;
     }
@@ -94,9 +95,9 @@ function smartfilter() {
       encloseField: false
     });
 
-    var tableName = InstanceMap[instance].tableName;
-    var dbConfig = InstanceMap[instance].dbConfig;
-    var shouldCacheResults = InstanceMap[instance].shouldCacheResults;
+    const tableName = InstanceMap[instance].tableName;
+    const dbConfig = InstanceMap[instance].dbConfig;
+    const shouldCacheResults = InstanceMap[instance].shouldCacheResults;
     createToExternalDatabasePivot(dbConfig, tableName, shouldCacheResults, query, function(data, isCachedResult) {
       cb(data);
       data = null;
@@ -140,7 +141,7 @@ function smartfilter() {
       InstanceMap[instance].pivotListResult[reference] ? delete InstanceMap[instance].pivotListResult[reference] : "";
       InstanceMap[instance].pivotListResultKey[reference] ? delete InstanceMap[instance].pivotListResultKey[reference] : "";
       InstanceMap[instance].pivotListFilters[reference] ? delete InstanceMap[instance].pivotListFilters[reference] : "";
-      for (var i = 0; i < InstanceMap[instance].pivotMap.length > 0 && InstanceMap[instance].pivotMap.length; i++) {
+      for (let i = 0; i < InstanceMap[instance].pivotMap.length > 0 && InstanceMap[instance].pivotMap.length; i++) {
         if (InstanceMap[instance].pivotMap[i].reference == reference) {
           InstanceMap[instance].pivotMap.splice(i, 1);
           i--;
@@ -153,7 +154,7 @@ function smartfilter() {
     if (debug)
       console.log('executePivots', dimension);
 
-    var indexes = InstanceMap[instance].pivotMap.map((d,i)=> i);
+    const indexes = InstanceMap[instance].pivotMap.map((d,i)=> i);
     async.eachLimit(indexes,5,function(item, callback){
       getAllPivotResults(item, addReduceNone, dimension, reference, instance, function(data) {
         if (debug)
@@ -185,16 +186,16 @@ function smartfilter() {
   }
 
   function prepareQueryJSON(instance, index, dimension) {
-    var filterCondition = createPivotWhereCondition(index, instance);
+    const filterCondition = createPivotWhereCondition(index, instance);
     if (InstanceMap[instance].oldFilterConditions.indexOf(JSON.stringify(filterCondition)) == -1)
       InstanceMap[instance].oldFilterConditions.push(JSON.stringify(filterCondition));
     //var i = index;
     //var startTime = new Date().getTime();
     if (debug)
       console.log('Querying for for dimension \'' + InstanceMap[instance].pivotMap[index].dimensions + '\'');
-    var query = {};
+    const query = {};
     query.select = [];
-    for (var n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
+    for (let n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
       if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
         if (InstanceMap[instance].pivotMap[index].dimensions[n] !== "") {
           query.select.push({
@@ -203,7 +204,7 @@ function smartfilter() {
           });
         }
       } else if (Array.isArray(InstanceMap[instance].pivotMap[index].dimensions[n].values)) {
-        var caseStatement = {
+        const caseStatement = {
           field: InstanceMap[instance].pivotMap[index].dimensions[n].values[0].key,
           expression: {
             cases: [],
@@ -236,8 +237,8 @@ function smartfilter() {
         });
       }
     }
-    var measures = InstanceMap[instance].pivotMap[index].measures;
-    for (var j = 0; j < measures.length; j++) {
+    const measures = InstanceMap[instance].pivotMap[index].measures;
+    for (let j = 0; j < measures.length; j++) {
       if (measures[j].alias === undefined)
         measures[j].alias = measures[j].aggregation + '(' + measures[j].key + ')';
       if (measures[j].key !== "")
@@ -255,7 +256,7 @@ function smartfilter() {
         });
     }
     query.groupby = [];
-    for (var n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
+    for (let n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
       if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
         if (InstanceMap[instance].pivotMap[index].dimensions[n] !== "") {
           query.groupby.push({
@@ -263,7 +264,7 @@ function smartfilter() {
           });
         }
       } else if (Array.isArray(InstanceMap[instance].pivotMap[index].dimensions[n].values)) {
-        var caseStatement = {
+        const caseStatement = {
           field: InstanceMap[instance].pivotMap[index].dimensions[n].values[0].key,
           expression: {
             cases: [],
@@ -274,7 +275,7 @@ function smartfilter() {
         };
         if (InstanceMap[instance].pivotMap[index].dimensions[n]['default'] != null)
           caseStatement.expression['default'].value = '"' + InstanceMap[instance].pivotMap[index].dimensions[n]['default'] + '"';
-        for (var i = 0; i < InstanceMap[instance].pivotMap[index].dimensions[n].values.length; i++) {
+        for (let i = 0; i < InstanceMap[instance].pivotMap[index].dimensions[n].values.length; i++) {
           caseStatement.expression.cases.push({
             operator: InstanceMap[instance].pivotMap[index].dimensions[n].values[i].type,
             value: InstanceMap[instance].pivotMap[index].dimensions[n].values[i].value,
@@ -293,7 +294,7 @@ function smartfilter() {
     }
     if (forceOrderBy == true) {
       query.sortby = [];
-      for (var n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
+      for (let n = 0; n < InstanceMap[instance].pivotMap[index].dimensions.length; n++) {
         if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
           if (InstanceMap[instance].pivotMap[index].dimensions[n] !== "") {
             query.sortby.push({
@@ -314,7 +315,7 @@ function smartfilter() {
         }
       }
     }
-    var sortBy = InstanceMap[instance].pivotMap[index].sortBy;
+    const sortBy = InstanceMap[instance].pivotMap[index].sortBy;
     if (sortBy != undefined && sortBy.length > 0) {
       query.sortby = query.hasOwnProperty('sortby') ? query.sortby : [];
 
@@ -355,14 +356,14 @@ function smartfilter() {
         return;
       }
 
-      var output = prepareQueryJSON(instance, index, dimension);
-      var query = output.query;
-      var measures = output.measures;
-      var i = index;
-      var startTime = new Date();
-      var tableName = InstanceMap[instance].tableName;
-      var dbConfig = InstanceMap[instance].dbConfig;
-      var shouldCacheResults = InstanceMap[instance].shouldCacheResults;
+      const output = prepareQueryJSON(instance, index, dimension);
+      const query = output.query;
+      const measures = output.measures;
+      const i = index;
+      const startTime = new Date();
+      const tableName = InstanceMap[instance].tableName;
+      const dbConfig = InstanceMap[instance].dbConfig;
+      const shouldCacheResults = InstanceMap[instance].shouldCacheResults;
       createToExternalDatabasePivot(dbConfig, tableName, shouldCacheResults, query, function(data, isCachedResult) {
         if (debug) {
           console.log(data.length + ' rows Returned for dimensions \'' + InstanceMap[instance].pivotMap[i].dimensions + '\' in ' + (new Date().getTime() - startTime) / 1000 + ' seconds from ' + (isCachedResult ? 'memory' : 'db') + '. addReduceNone: ' + addReduceNone);
@@ -371,9 +372,9 @@ function smartfilter() {
 
         //add to existing
         if (InstanceMap[instance].smartDecision && addReduceNone === 1) {
-          for (var j = 0; j < data.length; j++) {
-            var pivotMapDimensionKey = [];
-            for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
+          for (let j = 0; j < data.length; j++) {
+            const pivotMapDimensionKey = [];
+            for (let n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
               if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
               } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
@@ -383,14 +384,14 @@ function smartfilter() {
               }
             }
             //var keyIndex = pivotListResultKey[pivotMap[i].dimensions.join("_$#$_")].indexOf(pivotMapDimensionKey.join("_$#$_"));
-            var keyIndex = InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
+            const keyIndex = InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
             if (keyIndex === -1) {
               InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference].push(data[j]);
               InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].push(pivotMapDimensionKey.join("_$#$_"));
               InstanceMap[instance].pivotListFilters[InstanceMap[instance].pivotMap[i].reference].push(query.filter);
             } else {
 
-              for (var k = 0; k < measures.length; k++) {
+              for (let k = 0; k < measures.length; k++) {
                 InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference][keyIndex][measures[k].alias] += data[j][measures[k].alias];
               }
             }
@@ -398,9 +399,9 @@ function smartfilter() {
         }
         //remove from existing
         else if (InstanceMap[instance].smartDecision && addReduceNone === 2) {
-          for (var j = 0; j < data.length; j++) {
-            var pivotMapDimensionKey = [];
-            for (var n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
+          for (let j = 0; j < data.length; j++) {
+            const pivotMapDimensionKey = [];
+            for (let n = 0; n < InstanceMap[instance].pivotMap[i].dimensions.length; n++) {
               if (typeof InstanceMap[instance].pivotMap[index].dimensions[n] === "string") {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n]]);
               } else if (typeof InstanceMap[instance].pivotMap[index].dimensions[n].alias != undefined) {
@@ -409,7 +410,7 @@ function smartfilter() {
                 pivotMapDimensionKey.push(data[j][InstanceMap[instance].pivotMap[i].dimensions[n].key]);
               }
             }
-            var keyIndex = InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
+            const keyIndex = InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].indexOf(pivotMapDimensionKey.join("_$#$_"));
             if (keyIndex === -1) {
               // not possible
               throw ("node-cross-filter, reduce part could not found existing row.");
@@ -420,7 +421,7 @@ function smartfilter() {
                 InstanceMap[instance].pivotListResultKey[InstanceMap[instance].pivotMap[i].reference].splice(keyIndex, 1);
                 InstanceMap[instance].pivotListFilters[InstanceMap[instance].pivotMap[i].reference].splice(keyIndex, 1);
               } else {
-                for (var k = 0; k < measures.length; k++) {
+                for (let k = 0; k < measures.length; k++) {
                   InstanceMap[instance].pivotListResult[InstanceMap[instance].pivotMap[i].reference][keyIndex][measures[k].alias] -= data[j][measures[k].alias];
                 }
               }
@@ -454,9 +455,9 @@ function smartfilter() {
         }, 1);
       });
     } else {
-      var allFilters = [].concat(InstanceMap[instance].staticFilters);
-      var keys = Object.keys(InstanceMap[instance].filteredDimension);
-      for (var i = 0; i < keys.length; i++) {
+      const allFilters = [].concat(InstanceMap[instance].staticFilters);
+      const keys = Object.keys(InstanceMap[instance].filteredDimension);
+      for (let i = 0; i < keys.length; i++) {
         allFilters.push(InstanceMap[instance].filteredDimension[keys[i]]);
       }
       if (reference == undefined) {
@@ -465,7 +466,7 @@ function smartfilter() {
           filters: allFilters
         }); //, appliedFilters: pivotListFilters
       } else {
-        var json = {
+        let json = {
           data: {},
           appliedFilters: {},
           filters: []
@@ -491,12 +492,12 @@ function smartfilter() {
 
   function createPivotWhereCondition(index, instance) {
     //console.log(InstanceMap[instance], instance, "create pivot condition---------------")
-    var filterList = Object.keys(InstanceMap[instance].filteredDimension);
-    var filterCondition = {
+    const filterList = Object.keys(InstanceMap[instance].filteredDimension);
+    const filterCondition = {
       and: []
     };
-    var filtersTobeApplied = [].concat(InstanceMap[instance].staticFilters);
-    for (var i = 0; i < filterList.length; i++) {
+    const filtersTobeApplied = [].concat(InstanceMap[instance].staticFilters);
+    for (let i = 0; i < filterList.length; i++) {
       if (InstanceMap[instance].filteredDimension[filterList[i]] != null && InstanceMap[instance].filteredDimension[filterList[i]].filters != null && InstanceMap[instance].filteredDimension[filterList[i]].filters.length > 0 && (index == -1 || (InstanceMap[instance].pivotMap[index] && InstanceMap[instance].pivotMap[index].dimensions.length === 1 && (InstanceMap[instance].pivotMap[index].dimensions[0] === filterList[i] || InstanceMap[instance].pivotMap[index].dimensions[0].key === filterList[i])) == false)) {
         filtersTobeApplied.push({
           filterType: InstanceMap[instance].filteredDimension[filterList[i]].filterType,
@@ -509,7 +510,7 @@ function smartfilter() {
     }
 
     if (filtersTobeApplied.length > 0) {
-      for (var i = 0; i < filtersTobeApplied.length; i++) {
+      for (let i = 0; i < filtersTobeApplied.length; i++) {
         if (filtersTobeApplied[i].filterType === 'in') {
           filterCondition.and.push({
             field: filtersTobeApplied[i].field,
@@ -531,8 +532,8 @@ function smartfilter() {
             encloseField: filtersTobeApplied[i].encloseField
           });
         } else if (filtersTobeApplied[i].filterType === 'withinAll') {
-          for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
-            var filterJSON = [];
+          for (let j = 0; j < filtersTobeApplied[i].filters.length; j++) {
+            const filterJSON = [];
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'eq',
@@ -566,8 +567,8 @@ function smartfilter() {
           filterCondition.and.push({
             or: []
           });
-          for (var j = 0; j < filtersTobeApplied[i].filters.length; j++) {
-            var filterJSON = [];
+          for (let j = 0; j < filtersTobeApplied[i].filters.length; j++) {
+            const filterJSON = [];
             filterJSON.push({
               field: filtersTobeApplied[i].field,
               operator: 'eq',
@@ -631,12 +632,12 @@ function smartfilter() {
 
   function staticFilter(filters, instance, cb) {
     InstanceMap[instance].staticFilters = filters;
-    for (var i = 0; i < InstanceMap[instance].staticFilters.length; i++) {
+    for (let i = 0; i < InstanceMap[instance].staticFilters.length; i++) {
       if (InstanceMap[instance].staticFilters[i].filters != undefined)
         InstanceMap[instance].staticFilters[i].filters = InstanceMap[instance].staticFilters[i].filters.sort();
     }
-    var keys = Object.keys(InstanceMap[instance].filteredDimension);
-    for (var i = 0; i < keys.length; i++) {
+    const keys = Object.keys(InstanceMap[instance].filteredDimension);
+    for (let i = 0; i < keys.length; i++) {
       InstanceMap[instance].filteredDimension[keys[i]].filters = [];
     }
     executePivots(instance, 0, null, cb);
@@ -678,7 +679,7 @@ function smartfilter() {
 
       //values = values.sort();
       if (InstanceMap[instance].smartDecision == true) {
-        var addReduceNone = optimizeFilters(instance, filterType, dimension, values)
+        const addReduceNone = optimizeFilters(instance, filterType, dimension, values)
       } else {
 
         InstanceMap[instance].filteredDimension[dimension].filters = values;
@@ -698,11 +699,11 @@ function smartfilter() {
 
   function optimizeFilters(instance, filterType, dimension, values) {
 
-    var existingCondition = InstanceMap[instance].filteredDimension[dimension].filters;
+    const existingCondition = InstanceMap[instance].filteredDimension[dimension].filters;
     InstanceMap[instance].filteredDimension[dimension].filters = values;
-    var addReduceNone = 0; //None = 0, Add = 1, Reduce = 2
-    var currCondition = createPivotWhereCondition(0, instance);
-    var filterConditionIndex = InstanceMap[instance].oldFilterConditions.indexOf(JSON.stringify(currCondition));
+    const addReduceNone = 0; //None = 0, Add = 1, Reduce = 2
+    const currCondition = createPivotWhereCondition(0, instance);
+    const filterConditionIndex = InstanceMap[instance].oldFilterConditions.indexOf(JSON.stringify(currCondition));
     // console.log("###################  test #################", InstanceMap[instance].oldFilterConditions, JSON.stringify(currCondition),JSON.stringify(existingCondition));
     if (filterConditionIndex > -1) {
       //dont change condition
@@ -735,7 +736,7 @@ function smartfilter() {
             else if ((new Date(existingCondition[1])).getTime() != 0) {
               // added
               if (new Date(existingCondition[1]) <= new Date(values[1])) {
-                var dt = new Date(existingCondition[1]);
+                const dt = new Date(existingCondition[1]);
                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                 if (dt.getSeconds() == 0) {
                   dt.setDate(dt.getDate() + 1);
@@ -749,7 +750,7 @@ function smartfilter() {
               }
               //reduced
               else {
-                var dt = new Date(values[1]);
+                const dt = new Date(values[1]);
                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                 if (dt.getSeconds() == 0) {
                   dt.setDate(dt.getDate() + 1);
@@ -791,7 +792,7 @@ function smartfilter() {
             else if ((new Date(existingCondition[0])).getTime() != 0) {
               if (new Date(values[0]) <= new Date(existingCondition[0])) {
                 newCondition[0] = values[0];
-                var dt = new Date(existingCondition[0]);
+                const dt = new Date(existingCondition[0]);
                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                 if (dt.getSeconds() == 0) {
                   dt.setDate(dt.getDate() - 1);
@@ -803,7 +804,7 @@ function smartfilter() {
                 addReduceNone = 1;
               } else {
                 newCondition[0] = existingCondition[0];
-                var dt = new Date(values[0]);
+                const dt = new Date(values[0]);
                 dt.setMinutes(dt.getMinutes() + dt.getTimezoneOffset());
                 if (dt.getSeconds() == 0) {
                   dt.setDate(dt.getDate() - 1);
@@ -838,11 +839,11 @@ function smartfilter() {
             //if existing/2 < new then try to alter condition else dont alter condition
             if (existingCondition.length / 2 < values.length) {
               //all new values should be part of existing values
-              var allNewValuesFound = true;
-              var existingFoundIndexes = [];
-              for (var i = 0; i < values.length && allNewValuesFound === true; i++) {
+              let allNewValuesFound = true;
+              const existingFoundIndexes = [];
+              for (let i = 0; i < values.length && allNewValuesFound === true; i++) {
                 //current value is not part of existing condition
-                var existingIndex = existingCondition.indexOf(values[i]);
+                const existingIndex = existingCondition.indexOf(values[i]);
                 if (existingIndex === -1) {
                   allNewValuesFound = false;
                 } else {
@@ -852,7 +853,7 @@ function smartfilter() {
               }
               //actually new values are subset of old values
               if (allNewValuesFound === true) {
-                for (var i = 0; i < existingCondition.length; i++) {
+                for (let i = 0; i < existingCondition.length; i++) {
                   if (existingFoundIndexes.indexOf(i) === -1) {
                     newCondition.push(existingCondition[i]);
                   }
@@ -870,11 +871,11 @@ function smartfilter() {
           //most likely added some values
           else {
             //all existing values should be part of new values
-            var allExistingValuesFound = true;
-            var newValuesFoundIndexes = [];
-            for (var i = 0; i < existingCondition.length && allExistingValuesFound === true; i++) {
+            let allExistingValuesFound = true;
+            const newValuesFoundIndexes = [];
+            for (let i = 0; i < existingCondition.length && allExistingValuesFound === true; i++) {
               //current value is not part of new condition
-              var newValueIndex = values.indexOf(existingCondition[i]);
+              const newValueIndex = values.indexOf(existingCondition[i]);
               if (newValueIndex === -1) {
                 allExistingValuesFound = false;
               } else {
@@ -884,7 +885,7 @@ function smartfilter() {
             }
             //actually old values are subset of new values
             if (allExistingValuesFound === true) {
-              for (var i = 0; i < values.length; i++) {
+              for (let i = 0; i < values.length; i++) {
                 if (newValuesFoundIndexes.indexOf(i) === -1) {
                   newCondition.push(values[i]);
                 }
@@ -917,7 +918,7 @@ function smartfilter() {
 
   function connect(tblName, config, smartDecision, shouldCacheResults, cb) {
 
-    var ref = utils.uuid();
+    const ref = utils.uuid();
     InstanceMap[ref] = {
       staticFilters: [],
       filteredDimension: {},
@@ -972,7 +973,6 @@ function smartfilter() {
           processRequestStack();
         });
       } else if (cReq.type.toLowerCase() === "data") {
-        var from, to;
         if (cReq.data == undefined) {
           getData(undefined, undefined, function(data) {
             cReq.cb({
@@ -1103,6 +1103,22 @@ function smartfilter() {
       cb({ type: 'error', error: { message: 'InstanceRefernce required for non connect requests' } })
     }
   }
+
+  function smartfilterRequestPromise(m, cb) {
+    return new Promise((resolve, reject) => {
+      instance.smartfilterRequest(m, (result) => {
+        if(result.type == 'error') {
+          reject(result.error);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+
+  this.promise = {
+    smartfilterRequest: smartfilterRequestPromise
+  };
 
 
   return this;
