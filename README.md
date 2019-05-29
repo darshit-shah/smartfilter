@@ -60,8 +60,10 @@ Here is an example how to include it:
 ```js
 
 var smartfilter = require('smartfilter');
-var mysmartfilter = new smartfilter();
 
+var mysmartfilter = new smartfilter();
+//or 
+var mysmartfilter = new smartfilter().promise;
 ```
 
 You can create new object of SmartFilter number of times. Each object will store database configuration, dimensions, filters and previous results in memory seperatly.
