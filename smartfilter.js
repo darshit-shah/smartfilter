@@ -493,7 +493,7 @@ function smartfilter() {
   function createPivotWhereCondition(index, instance) {
     //console.log(InstanceMap[instance], instance, "create pivot condition---------------")
     const filterList = Object.keys(InstanceMap[instance].filteredDimension);
-    let filterCondition = {
+    const filterCondition = {
       and: []
     };
     const filtersTobeApplied = [].concat(InstanceMap[instance].staticFilters);
