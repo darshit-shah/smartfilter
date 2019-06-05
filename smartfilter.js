@@ -606,7 +606,7 @@ function smartfilter() {
       }
     }
     if (filterCondition.and.length === 0)
-      filterCondition = undefined;
+      return undefined;
     if (debug)
       console.log('actual filter: ', (filterCondition != undefined ? filterCondition.and : 'none'));
     return filterCondition;
