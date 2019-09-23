@@ -479,12 +479,14 @@ function smartfilter() {
       }
       if(!InstanceMap[instance].shouldCacheResults){
         if(reference == undefined){
-          InstanceMap[instance].pivotListResult = [];
-          InstanceMap[instance].pivotListResult = null;
+//            InstanceMap[instance].pivotListResult = [];
+//            InstanceMap[instance].pivotListResult = null;
         }
-        InstanceMap[instance].pivotListResult[reference] = [];
-        InstanceMap[instance].pivotListResult[reference] = null;
-        delete InstanceMap[instance].pivotListResult[reference];
+        else{
+           InstanceMap[instance].pivotListResult[reference] = [];
+           InstanceMap[instance].pivotListResult[reference] = null;
+           delete InstanceMap[instance].pivotListResult[reference];
+        }
       }
       InstanceMap[instance].pivotListResult
     }
