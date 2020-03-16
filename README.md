@@ -79,7 +79,7 @@ mysmartfilter.smartfilterRequest(options, callback_method);
 ```
 
 Here, 'options' is a JSON parameter which contains two keys
-1) type: here you need to tell what operations you want to perform. Right now you can specify one of ['connct', 'dimension', 'filter', 'data', 'count']
+1) type: here you need to tell what operations you want to perform. Right now you can specify one of ['connect', 'dimension', 'filter', 'data', 'count']
 2) data: here you need to specify supporting data for specified type. Details about supporting data is given further in this document.
 
 
@@ -134,9 +134,10 @@ Once you are successfully connected, you can add dimension to create new pivot d
 Here is a sample code to create a pivot on 'Type' as Dimension and 'Sum' of 'Volume' as Measure.
 
 ```js
-
+const instanceReference=output.content;//here output is result from connect call
 mysmartfilter.smartfilterRequest({
   type: 'pivot',
+  instanceReference:instanceReference,
   data: {
     reference: 'myPivot',
     dimensions: [//Multiple dimensions can be specified
@@ -172,9 +173,10 @@ After you have created a pivot definition, you can specify your filter condition
 Here is a sample code to add filter on 'Qtr' column, with type of filter as 'in' and array of values as ['Q1', 'Q2']
 
 ```js
-
+const instanceReference=output.content;//here output is result from connect call
 mysmartfilter.smartfilterRequest({
   type: 'filter',
+  instanceReference:instanceReference,
   data: {
     field: 'Qtr', //Column name on which filter needs to be applied
     filterType: 'in', //type of filter. 'in' means from list of values, 'range' means between
@@ -201,9 +203,10 @@ mysmartfilter.smartfilterRequest({
 Now if you want to fetch raw records from base table after applying all filter conditions, you can use below code.
 
 ```js
-
+const instanceReference=output.content;//here output is result from connect call
 mysmartfilter.smartfilterRequest({
   type: 'data', // fetch raw data
+  instanceReference:instanceReference,
   data: {  }
 }, function (output) {
   if (output.type !== 'error') {
@@ -241,14 +244,15 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
     Both traditional and SmartFilter's approach will create a query something like "select Type, sum(Volume) from Stock group by Type"
     But SmartFilter will store this query and corresponding result in cache and next time when same query is generated, it will just return result from cache without querying any database.
     */
-    mysmartfilter.smartfilterRequest({ type: "pivot", data: { reference:'myPivot', dimensions:['Type'], measures:[{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
+    const instanceReference=output.content;//here output is result from connect call
+    mysmartfilter.smartfilterRequest({ type: "pivot",instanceReference:instanceReference, data: { reference:'myPivot', dimensions:['Type'], measures:[{ key: 'volume', aggregation: 'sum'}]} }, function (output) {
       if (output.type !== 'error') {
         /*
         Step 3. Apply Filter Qtr = 'Q1'
         Here also both will create a query like "select Type, sum(Volume) from Stock where Qtr in ['Q1'] group by Type"
         And same as step 2, it will store query and result in cache
         */
-        mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
+        mysmartfilter.smartfilterRequest({ type: "filter",instanceReference:instanceReference, data: { field: 'Qtr', filters: ['Q1'], filterType: 'in'} }, function (output) {
           if (output.type !== 'error') {
             /*
             Step 4. Apply Filter Qtr in ['Q1', 'Q2']
@@ -260,7 +264,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
             Once result is available, it will merge it with result from Step 3 and final result is produced for given filter condition.
             And at the end it will store query and result in cache.
             */
-            mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
+            mysmartfilter.smartfilterRequest({ type: "filter",instanceReference:instanceReference, data: { field: 'Qtr', filters: ['Q1', 'Q2'], filterType: 'in'} }, function (output) {
               if (output.type !== 'error') {
                 /*
                 Step 5. Apply Filter Qtr = 'Q2'
@@ -268,7 +272,7 @@ mysmartfilter.smartfilterRequest({ type: "connect", data: { tableName: "Stock", 
                 guess what, SmartFilter has already cached this query's and its output in Step 4.
                 So result is returned directly from cache without even touching database.
                 */
-                mysmartfilter.smartfilterRequest({ type: "filter", data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
+                mysmartfilter.smartfilterRequest({ type: "filter",instanceReference:instanceReference, data: { field: 'Qtr', filters: ['Q2'], filterType: 'in'} }, function (output) {
                   if (output.type !== 'error') {
                     console.log("Result:", output.data, '\n\n');
                   }
