@@ -1087,7 +1087,12 @@ function smartfilter() {
   }
 
   this.smartfilterRequest = function(m, cb) {
-    m.cb = cb;
+    // Update callback method to execute it asynchronously,
+    // So that the errors generated does not affect smartfilter and callback is not processed
+    // synchronously
+    m.cb = function(...args){
+      setTimeout(() => cb(...args), 0);
+    };
     if (m.hasOwnProperty('instanceReference') || m.type == 'connect') {
 
       myRequestStack.push(m);
