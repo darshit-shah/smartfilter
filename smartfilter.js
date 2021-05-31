@@ -616,6 +616,9 @@ function smartfilter() {
 
   function createToExternalDatabasePivot(dbConfig, tableName, shouldCacheResults, query, cb) {
     query.table = tableName;
+    if(dbConfig.schema){
+      query.schema = dbConfig.schema
+    }
     executionEngine.executeQuery({
       query: query,
       dbConfig: dbConfig,
