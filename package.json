@@ -12,10 +12,8 @@
     "Smartfilter"
   ],
   "dependencies": {
-    "async": "2.0.0",
+    "async": "^2.6.4",
     "axiom-utils": "*",
-    "d3": "4.12.2",
-    "easy-zip": "0.0.4",
     "node-database-connectors": "*",
     "node-database-executor": "*"
   },
@@ -31,5 +29,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "description": "This is a node module bundled with Node Package Manager(NPM). It is a javascript and does not require any compilation.",
-  "version": "2.1.0"
+  "version": "2.1.1"
 }
